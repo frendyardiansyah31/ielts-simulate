@@ -12,10 +12,12 @@
   terpisah (level "question group"), atau minimal tambah `group_id` + validasi konsistensi di app layer.
 
 ## Dependency band score conversion table (dari review awal, item 5)
-- `lib/scoring.ts` (dikerjakan Minggu 3 sesuai timeline) bergantung pada tabel konversi band score
-  resmi Cambridge Academic Reading yang masih open question di PRD (section 10).
-- Harus dikonfirmasi/dilampirkan **sebelum** mulai implementasi Minggu 3, supaya gak jadi blocker
-  mendadak di tengah jalan.
+- `lib/scoring.ts` sudah dibuat (dimajukan ke Minggu 1 untuk menutup loop `multiple_choice`
+  end-to-end, bukan Minggu 3 seperti rencana awal) — tapi `rawScoreToBand()` di dalamnya pakai
+  tabel approximate yang umum dipublikasikan (Cambridge/IDP prep materials), **bukan** tabel resmi
+  per-administrasi-test yang sebenarnya bisa sedikit berbeda tiap test.
+- Masih open question di PRD §10: perlu diganti dengan tabel resmi begitu dikonfirmasi/dilampirkan
+  — cari `BAND_SCORE_TABLE` di `src/lib/scoring.ts`.
 
 ## Minor gaps (dicatat untuk perbaikan nanti)
 - Tidak ada trigger untuk auto-update `reading_tests.updated_at` — kolom ada tapi tidak pernah

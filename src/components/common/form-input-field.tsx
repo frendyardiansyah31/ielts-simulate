@@ -12,6 +12,7 @@ interface FormInputFieldProps<TFieldValues extends FieldValues> {
   type?: React.HTMLInputTypeAttribute;
   placeholder?: string;
   autoComplete?: string;
+  disabled?: boolean;
 }
 
 export function FormInputField<TFieldValues extends FieldValues>({
@@ -22,6 +23,7 @@ export function FormInputField<TFieldValues extends FieldValues>({
   type = "text",
   placeholder,
   autoComplete,
+  disabled,
 }: FormInputFieldProps<TFieldValues>) {
   return (
     <Controller
@@ -31,12 +33,26 @@ export function FormInputField<TFieldValues extends FieldValues>({
         <Field data-invalid={fieldState.invalid}>
           <FieldLabel htmlFor={id}>{label}</FieldLabel>
           <Input
-            {...field}
             id={id}
             type={type}
             placeholder={placeholder}
             autoComplete={autoComplete}
+            disabled={disabled}
             aria-invalid={fieldState.invalid}
+            name={field.name}
+            ref={field.ref}
+            onBlur={field.onBlur}
+            value={field.value ?? ""}
+            onChange={(e) => {
+              // type="number" fields deliver a real number to RHF state so
+              // the zod schema can stay `z.number()` (no coerce needed).
+              if (type === "number") {
+                const parsed = e.target.valueAsNumber;
+                field.onChange(Number.isNaN(parsed) ? undefined : parsed);
+              } else {
+                field.onChange(e.target.value);
+              }
+            }}
           />
           {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
         </Field>

@@ -1,37 +1,39 @@
 import { NextRequest, NextResponse } from "next/server";
 import { flattenError } from "zod";
 import { requireAdmin } from "@/lib/supabase/require-admin";
-import { createPassageSchema } from "@/validations/passage-validation";
-import { computeWordCount } from "@/lib/tests/word-count";
-import { listPassagesForTest } from "@/lib/tests/get-passages-list";
+import { createQuestionSchema } from "@/validations/question-validation";
 
-type RouteParams = { params: Promise<{ testId: string }> };
+type RouteParams = { params: Promise<{ passageId: string }> };
 
 export async function GET(_request: NextRequest, { params }: RouteParams) {
   const auth = await requireAdmin();
   if (!auth.ok) return auth.response;
 
-  const { testId } = await params;
+  const { passageId } = await params;
 
-  try {
-    const passages = await listPassagesForTest(auth.supabase, testId);
-    return NextResponse.json({ data: passages });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
+  const { data, error } = await auth.supabase
+    .from("reading_questions")
+    .select("*")
+    .eq("passage_id", passageId)
+    .order("question_number", { ascending: true });
+
+  if (error) {
     return NextResponse.json(
-      { error: { message, code: "INTERNAL_ERROR" } },
+      { error: { message: error.message, code: "INTERNAL_ERROR" } },
       { status: 500 },
     );
   }
+
+  return NextResponse.json({ data });
 }
 
 export async function POST(request: NextRequest, { params }: RouteParams) {
   const auth = await requireAdmin();
   if (!auth.ok) return auth.response;
 
-  const { testId } = await params;
+  const { passageId } = await params;
   const body = await request.json();
-  const validatedFields = createPassageSchema.safeParse(body);
+  const validatedFields = createQuestionSchema.safeParse(body);
 
   if (!validatedFields.success) {
     return NextResponse.json(
@@ -46,16 +48,17 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     );
   }
 
-  const { passage_number, title, content } = validatedFields.data;
+  const { question_number, type, question_data, explanation } =
+    validatedFields.data;
 
   const { data, error } = await auth.supabase
-    .from("reading_passages")
+    .from("reading_questions")
     .insert({
-      test_id: testId,
-      passage_number,
-      title,
-      content,
-      word_count: computeWordCount(content),
+      passage_id: passageId,
+      question_number,
+      type,
+      question_data,
+      explanation,
     })
     .select()
     .single();
@@ -65,11 +68,18 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json(
         {
           error: {
-            message: `Passage nomor ${passage_number} sudah ada di test ini`,
+            message: `Nomor soal ${question_number} sudah dipakai di test ini`,
             code: "VALIDATION_ERROR",
           },
         },
         { status: 400 },
+      );
+    }
+
+    if (error.code === "P0001") {
+      return NextResponse.json(
+        { error: { message: "Passage tidak ditemukan", code: "NOT_FOUND" } },
+        { status: 404 },
       );
     }
 
