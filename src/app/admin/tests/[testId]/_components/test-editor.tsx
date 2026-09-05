@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { z } from "zod";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FieldGroup } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
@@ -91,11 +92,11 @@ export function TestEditor({ test }: { test: Test }) {
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle>
-          Detail Test —{" "}
-          <span className={test.status === "published" ? "text-primary" : "text-muted-foreground"}>
+        <CardTitle className="flex items-center gap-2">
+          Detail Test
+          <Badge variant={test.status === "published" ? "success" : "neutral"}>
             {test.status === "published" ? "Published" : "Draft"}
-          </span>
+          </Badge>
         </CardTitle>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" disabled={isBusy} onClick={togglePublish}>

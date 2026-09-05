@@ -1,14 +1,37 @@
+import Link from "next/link";
+import { BookOpenCheck, LogOut } from "lucide-react";
 import { DarkModeToggle } from "@/components/common/darkmode-toggle";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { logout } from "./actions";
 
 export default function Home() {
   return (
-    <div>
-      <form action={logout}>
-        <Button type="submit">Logout</Button>
-      </form>
-      <DarkModeToggle />
+    <div className="relative flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
+      <div className="absolute top-4 right-4 flex items-center gap-2">
+        <DarkModeToggle />
+        <form action={logout}>
+          <Button type="submit" variant="ghost" size="icon" aria-label="Logout">
+            <LogOut />
+          </Button>
+        </form>
+      </div>
+
+      <div className="flex flex-col items-center gap-6 text-center">
+        <div className="flex items-center gap-2 font-medium">
+          <div className="flex items-center justify-center rounded-md bg-teal-500 p-2">
+            <BookOpenCheck className="size-4" />
+          </div>
+          IELTS Simulate
+        </div>
+
+        <p className="max-w-sm text-sm text-muted-foreground">
+          Latihan IELTS Reading dengan timing dan format asli
+        </p>
+
+        <Link href="/tests" className={buttonVariants({ size: "lg" })}>
+          Start Tests
+        </Link>
+      </div>
     </div>
   );
 }

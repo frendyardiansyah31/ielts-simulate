@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { apiRequest } from "@/lib/api-client";
@@ -60,12 +61,16 @@ export function TestList({ tests }: { tests: AdminTestListItem[] }) {
       {tests.map((test) => (
         <Card key={test.id} className="flex-row items-center justify-between gap-4 px-4">
           <div className="flex flex-col gap-1">
-            <Link href={`/admin/tests/${test.id}`} className="font-medium underline-offset-4 hover:underline">
-              {test.title}
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link href={`/admin/tests/${test.id}`} className="font-medium underline-offset-4 hover:underline">
+                {test.title}
+              </Link>
+              <Badge variant={test.status === "published" ? "success" : "neutral"}>
+                {test.status === "published" ? "Published" : "Draft"}
+              </Badge>
+            </div>
             <p className="text-sm text-muted-foreground">
-              {test.status === "published" ? "Published" : "Draft"} · {test.passage_count} passage ·{" "}
-              {test.question_count} soal · {test.time_limit_minutes} menit
+              {test.passage_count} passage · {test.question_count} soal · {test.time_limit_minutes} menit
             </p>
           </div>
           <div className="flex shrink-0 gap-2">

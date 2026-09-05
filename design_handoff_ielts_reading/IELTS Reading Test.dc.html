@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  mark.hl-yellow { background: #FDE68A; color: #1A1A1A; padding: 0 1px; border-radius: 2px; }
+  mark.hl-note { background: #BFDBFE; color: #1A1A1A; padding: 0 1px; border-radius: 2px; border-bottom: 2px dotted #1D4ED8; cursor: help; }
+  ::selection { background: #BEE3FF; }
+  .navbtn:hover { filter: brightness(0.97); }
+  .toolbtn:hover { background: rgba(255,255,255,0.15); }
+  .answer-label:hover span, .answer-label:hover mark { color: #1A2530 !important; }
+</style>
+</helmet>
+
+<div style="height:100vh;width:100%;display:flex;flex-direction:column;background:{{ theme.bgApp }};font-family:'Public Sans',system-ui,sans-serif;color:{{ theme.textPrimary }};overflow:hidden">
+
+  <!-- TOP BAR -->
+  <div style="height:56px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 20px;background:#0B4F8A;color:#fff;box-shadow:0 1px 3px rgba(0,0,0,0.15);z-index:20;position:relative">
+    <div style="display:flex;align-items:center;gap:12px;flex:1">
+      <div style="font-weight:700;font-size:20px;letter-spacing:0.5px">IELTS</div>
+      <div style="width:1px;height:22px;background:rgba(255,255,255,0.3)"></div>
+      <div style="font-size:13px;font-weight:500;color:rgba(255,255,255,0.85)">Academic Reading &middot; Passage 1</div>
+    </div>
+    <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;align-items:center;gap:7px;background:rgba(255,255,255,0.12);padding:7px 16px;border-radius:6px;font-variant-numeric:tabular-nums">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="{{ timerColor }}" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+      <span style="font-size:13px;color:rgba(255,255,255,0.7);font-weight:500">Time Remaining</span>
+      <span style="font-size:15px;font-weight:700;color:{{ timerColor }}">{{ timeDisplay }}</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;flex:1;justify-content:flex-end">
+      <button style="display:flex;align-items:center;gap:6px;background:transparent;border:1px solid rgba(255,255,255,0.4);color:#fff;padding:7px 12px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer" class="toolbtn" onClick="{{ toggleHelp }}">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 2-3 4"></path><circle cx="12" cy="17" r=".5" fill="currentColor"></circle></svg>
+        Help
+      </button>
+
+      <div style="position:relative">
+        <button style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;background:transparent;border:1px solid rgba(255,255,255,0.4);color:#fff;border-radius:6px;cursor:pointer" class="toolbtn" onClick="{{ toggleSettings }}">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        </button>
+
+        <sc-if value="{{ settingsOpen }}">
+        <div style="position:absolute;top:42px;right:0;width:230px;background:{{ theme.cardBg }};color:{{ theme.textPrimary }};border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.2);padding:14px;z-index:30">
+          <div style="font-size:12px;font-weight:700;color:#8A97A3;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">Display Settings</div>
+          <div style="font-size:13px;font-weight:600;margin-bottom:6px">Text Size</div>
+          <div style="display:flex;gap:6px;margin-bottom:14px">
+            <button style="flex:1;padding:6px 0;border:1px solid #D8DEE4;background:#F4F6F8;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600" onClick="{{ decFont }}">A-</button>
+            <button style="flex:1;padding:6px 0;border:1px solid #D8DEE4;background:#F4F6F8;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600" onClick="{{ resetFont }}">A</button>
+            <button style="flex:1;padding:6px 0;border:1px solid #D8DEE4;background:#F4F6F8;border-radius:6px;cursor:pointer;font-size:15px;font-weight:600" onClick="{{ incFont }}">A+</button>
+          </div>
+          <div style="font-size:13px;font-weight:600;margin-bottom:6px">Line Spacing</div>
+          <div style="display:flex;gap:6px;margin-bottom:14px">
+            <button style="flex:1;padding:6px 0;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;border:{{ lineSpacingStdBorder }};background:{{ lineSpacingStdBg }};color:{{ lineSpacingStdColor }}" onClick="{{ setSpacingStd }}">Standard</button>
+            <button style="flex:1;padding:6px 0;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;border:{{ lineSpacingWideBorder }};background:{{ lineSpacingWideBg }};color:{{ lineSpacingWideColor }}" onClick="{{ setSpacingWide }}">Relaxed</button>
+          </div>
+          <div style="font-size:13px;font-weight:600;margin-bottom:6px">Appearance</div>
+          <div style="display:flex;gap:6px">
+            <button style="flex:1;padding:6px 0;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:5px;border:{{ themeLightBorder }};background:{{ themeLightBg }};color:{{ themeLightColor }}" onClick="{{ setThemeLight }}">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>
+              Light
+            </button>
+            <button style="flex:1;padding:6px 0;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:5px;border:{{ themeDarkBorder }};background:{{ themeDarkBg }};color:{{ themeDarkColor }}" onClick="{{ setThemeDark }}">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+              Dark
+            </button>
+          </div>
+        </div>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+
+  <!-- HELP MODAL -->
+  <sc-if value="{{ helpOpen }}">
+  <div style="position:fixed;inset:0;background:rgba(10,20,30,0.45);z-index:40;display:flex;align-items:center;justify-content:center" onClick="{{ toggleHelp }}">
+    <div style="background:{{ theme.cardBg }};border-radius:10px;max-width:420px;padding:26px;box-shadow:0 20px 60px rgba(0,0,0,0.3)" onClick="{{ stopProp }}">
+      <div style="font-size:16px;font-weight:700;margin-bottom:10px;color:{{ theme.textStrong }}">How to answer</div>
+      <p style="font-size:13.5px;line-height:1.6;color:{{ theme.textStrong }};margin:0 0 10px">Read the passage on the left and answer the questions on the right. Select an option for each question. Use the numbered bar at the bottom to jump between questions.</p>
+      <p style="font-size:13.5px;line-height:1.6;color:{{ theme.textStrong }};margin:0 0 16px">Select any text to Highlight it or attach a Note. Drag the divider in the middle to resize the passage and question panes.</p>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;font-size:12.5px;color:{{ theme.textStrong }}">
+        <div style="display:flex;align-items:center;gap:8px"><div style="width:11px;height:11px;border-radius:2px;background:#0B4F8A"></div>Answered</div>
+        <div style="display:flex;align-items:center;gap:8px"><div style="width:11px;height:11px;border-radius:2px;background:{{ theme.cardBg }};border:1.5px solid #B0BAC4"></div>Unanswered</div>
+        <div style="display:flex;align-items:center;gap:8px"><div style="width:11px;height:11px;border-radius:50%;background:#F59E0B"></div>Flagged for review</div>
+      </div>
+      <button style="width:100%;padding:10px;background:#0B4F8A;color:#fff;border:none;border-radius:6px;font-weight:600;font-size:13.5px;cursor:pointer" onClick="{{ toggleHelp }}">Got it</button>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- SELECTION POPUP -->
+  <sc-if value="{{ selectionPopup.visible }}">
+  <div style="position:fixed;left:{{ selectionPopup.x }}px;top:{{ selectionPopup.y }}px;transform:translate(-50%,-100%);background:#1A2530;border-radius:7px;box-shadow:0 8px 20px rgba(0,0,0,0.3);display:flex;overflow:hidden;z-index:50">
+    <button style="padding:8px 12px;background:transparent;border:none;border-right:1px solid rgba(255,255,255,0.15);color:#FDE68A;font-size:12.5px;font-weight:600;cursor:pointer" class="toolbtn" onClick="{{ applyHighlight }}">Highlight</button>
+    <button style="padding:8px 12px;background:transparent;border:none;border-right:1px solid rgba(255,255,255,0.15);color:#93C5FD;font-size:12.5px;font-weight:600;cursor:pointer" class="toolbtn" onClick="{{ applyNote }}">Note</button>
+    <button style="padding:8px 12px;background:transparent;border:none;color:#FCA5A5;font-size:12.5px;font-weight:600;cursor:pointer" class="toolbtn" onClick="{{ applyClear }}">Clear</button>
+  </div>
+  </sc-if>
+
+  <!-- CONTENT -->
+  <div style="flex:1;display:flex;overflow:hidden;position:relative" onMouseUp="{{ onMouseUp }}">
+
+    <div style="width:{{ leftWidthStyle }};min-width:220px;overflow-y:auto;background:{{ theme.panelBg }};padding:28px 30px 60px;border-right:1px solid {{ theme.border }}">
+      <div style="font-size:12px;font-weight:700;color:#0B4F8A;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Reading Passage 1</div>
+      <div style="font-size:22px;font-weight:700;font-family:'Source Serif 4',serif;margin-bottom:6px;color:{{ theme.textPrimary }}">Coral Reefs Under Pressure</div>
+      <p style="font-size:13px;font-style:italic;color:{{ theme.textSecondary }};line-height:1.6;margin:0 0 22px">You should spend about 20 minutes on Questions 1&ndash;13, which are based on Reading Passage 1 below.</p>
+
+      <sc-for list="{{ paragraphs }}" as="para" hint-placeholder-count="4">
+        <div style="display:flex;gap:14px;margin-bottom:20px;font-family:'Source Serif 4',serif;font-size:{{ passageFontSize }}px;line-height:{{ lineHeight }}">
+          <div style="flex:none;font-weight:700;color:#0B4F8A;font-family:'Public Sans',sans-serif;font-size:13px;padding-top:2px">{{ para.label }}</div>
+          <div style="color:{{ theme.textPrimary }}">
+            <sc-for list="{{ para.segments }}" as="seg" hint-placeholder-count="6">
+              <sc-if value="{{ seg.marked }}" hint-placeholder-val="{{ false }}">
+                <mark class="{{ seg.markClass }}" title="{{ seg.note }}">{{ seg.text }}</mark>
+              </sc-if>
+              <sc-if value="{{ seg.plain }}" hint-placeholder-val="{{ true }}">
+                <span>{{ seg.text }}</span>
+              </sc-if>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="width:7px;flex:none;cursor:col-resize;background:{{ theme.border }};position:relative;display:flex;align-items:center;justify-content:center" onMouseDown="{{ startDrag }}">
+      <div style="width:3px;height:44px;border-radius:2px;background:#B7C0C9"></div>
+    </div>
+
+    <div style="flex:1;min-width:260px;overflow-y:auto;background:{{ theme.bgQuestionPanel }};padding:28px 30px 60px">
+      <div style="font-size:12px;font-weight:700;color:#0B4F8A;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Questions 1&ndash;13</div>
+      <p style="font-size:13px;font-style:italic;color:{{ theme.textSecondary }};line-height:1.6;margin:0 0 22px">Choose the correct letter, <strong>A</strong>, <strong>B</strong>, <strong>C</strong> or <strong>D</strong>.</p>
+
+      <sc-for list="{{ questions }}" as="q" hint-placeholder-count="13">
+        <div ref="{{ q.setRef }}" style="background:{{ theme.cardBg }};border:1px solid {{ q.borderColor }};border-radius:8px;padding:16px 18px;margin-bottom:14px;box-shadow:{{ q.shadow }}">
+          <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px">
+            <div style="flex:none;width:26px;height:26px;border-radius:6px;background:{{ q.numBg }};color:{{ q.numColor }};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700">{{ q.id }}</div>
+            <div style="flex:1;font-size:{{ questionFontSize }}px;line-height:{{ lineHeight }};font-weight:500;color:{{ theme.textPrimary }}">
+              <sc-for list="{{ q.stemSegments }}" as="seg" hint-placeholder-count="4">
+                <sc-if value="{{ seg.marked }}" hint-placeholder-val="{{ false }}">
+                  <mark class="{{ seg.markClass }}" title="{{ seg.note }}">{{ seg.text }}</mark>
+                </sc-if>
+                <sc-if value="{{ seg.plain }}" hint-placeholder-val="{{ true }}">
+                  <span>{{ seg.text }}</span>
+                </sc-if>
+              </sc-for>
+            </div>
+            <button style="flex:none;background:transparent;border:none;cursor:pointer;padding:2px" onClick="{{ q.toggleFlag }}" title="Mark for review">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="{{ q.flagFill }}" stroke="{{ q.flagStroke }}" stroke-width="2"><path d="M4 22V4a1 1 0 0 1 1-1h13.4a1 1 0 0 1 .77 1.64l-3.9 4.7a1 1 0 0 0 0 1.28l3.9 4.7a1 1 0 0 1-.77 1.64H5"></path></svg>
+            </button>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;padding-left:36px">
+            <sc-for list="{{ q.options }}" as="opt" hint-placeholder-count="4">
+              <label class="answer-label" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;cursor:pointer;background:{{ opt.bg }};font-size:{{ questionFontSize }}px" style-hover="background:#EEF3F8">
+                <input type="radio" name="{{ q.radioName }}" checked="{{ opt.checked }}" onChange="{{ opt.onSelect }}" style="accent-color:#0B4F8A;width:16px;height:16px" />
+                <span style="font-weight:600;color:{{ opt.letterColor }};width:16px">{{ opt.letter }}</span>
+                <span style="color:{{ opt.textColor }}">
+                  <sc-for list="{{ opt.segments }}" as="seg" hint-placeholder-count="2">
+                    <sc-if value="{{ seg.marked }}" hint-placeholder-val="{{ false }}">
+                      <mark class="{{ seg.markClass }}" title="{{ seg.note }}">{{ seg.text }}</mark>
+                    </sc-if>
+                    <sc-if value="{{ seg.plain }}" hint-placeholder-val="{{ true }}">
+                      <span>{{ seg.text }}</span>
+                    </sc-if>
+                  </sc-for>
+                </span>
+              </label>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- BOTTOM BAR -->
+  <div style="height:70px;flex:none;background:{{ theme.cardBg }};border-top:1px solid {{ theme.border }};display:flex;align-items:center;padding:0 20px;gap:18px;box-shadow:0 -1px 4px rgba(0,0,0,0.05)">
+    <div style="flex:1;overflow-x:auto;display:flex;gap:8px;padding:4px 2px">
+      <sc-for list="{{ navButtons }}" as="nb" hint-placeholder-count="13">
+        <button class="navbtn" style="flex:none;position:relative;width:36px;height:36px;border-radius:7px;background:{{ nb.bg }};color:{{ nb.color }};border:{{ nb.border }};font-size:13px;font-weight:700;cursor:pointer" onClick="{{ nb.onClick }}">
+          {{ nb.id }}
+          <sc-if value="{{ nb.flagged }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;top:-4px;right:-4px;width:9px;height:9px;border-radius:50%;background:#F59E0B;border:1.5px solid #fff"></div>
+          </sc-if>
+        </button>
+      </sc-for>
+    </div>
+    <button style="flex:none;display:flex;align-items:center;justify-content:center;width:36px;height:36px;background:#0B4F8A;color:#fff;border:none;border-radius:7px;cursor:pointer" onClick="{{ nextPassage }}" title="Next Passage">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+    </button>
+  </div>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const PARA_TEXT = [
+  { label: 'A', text: "Coral reefs occupy less than one percent of the ocean floor, yet they support an estimated quarter of all marine species at some stage of their life cycle. Built up over thousands of years by colonies of tiny animals called polyps, reefs provide food, shelter and breeding grounds for fish, molluscs and crustaceans. Beyond their ecological value, reefs protect coastlines from storm surges and generate billions of dollars annually through fisheries and tourism in tropical nations." },
+  { label: 'B', text: "In recent decades, however, rising sea temperatures have triggered widespread coral bleaching. When water becomes too warm, corals expel the colourful algae living in their tissues, turning white and losing their main source of nutrition. A bleached coral is not dead, but it is severely stressed, and if temperatures remain elevated for weeks the coral will eventually starve. Mass bleaching events, once rare, have now struck major reef systems multiple times within a single decade." },
+  { label: 'C', text: "A second, less visible threat comes from ocean acidification. As the sea absorbs excess carbon dioxide from the atmosphere, its chemistry shifts and becomes more acidic, reducing the availability of the carbonate ions that corals need to build their skeletons. Laboratory studies suggest that under projected end-of-century conditions, many reef-building species may be unable to grow their skeletons fast enough to keep pace with erosion, effectively causing reefs to dissolve faster than they can be built." },
+  { label: 'D', text: "Despite this bleak picture, marine biologists point to a number of promising interventions. Selective breeding programmes are cultivating heat-tolerant coral strains in nurseries before transplanting them onto degraded reefs. Some researchers are also experimenting with assisted gene flow, moving corals from naturally warmer reefs to cooler ones to boost thermal tolerance. While such measures cannot substitute for global reductions in greenhouse gas emissions, many scientists argue they may buy critical time for reefs to adapt." }
+];
+
+const QUESTION_DATA = [
+  { stem: "According to the passage, coral reefs cover approximately what proportion of the ocean floor?", options: ["Ten percent", "Less than one percent", "About a quarter", "Roughly half"], answerIndex: 1 },
+  { stem: "What are the tiny animals that build coral reefs called?", options: ["Molluscs", "Crustaceans", "Polyps", "Algae"], answerIndex: 2 },
+  { stem: "Which of the following is NOT mentioned as a benefit that reefs provide?", options: ["Coastal protection from storms", "Tourism revenue", "Fresh drinking water", "Breeding grounds for fish"], answerIndex: 2 },
+  { stem: "What happens to coral during a bleaching event?", options: ["It grows a new skeleton", "It expels the algae living in its tissues", "It absorbs extra carbon dioxide", "It reproduces more rapidly"], answerIndex: 1 },
+  { stem: "The passage states that a bleached coral is:", options: ["Already dead", "Unaffected by temperature", "Stressed but still alive", "Immune to further damage"], answerIndex: 2 },
+  { stem: "How has the frequency of mass bleaching events changed in recent decades?", options: ["It has decreased", "It has stayed the same", "It has become more frequent", "It has disappeared entirely"], answerIndex: 2 },
+  { stem: "What causes ocean acidification, as described in the passage?", options: ["Overfishing", "Excess carbon dioxide absorbed by the sea", "Coastal construction", "Coral bleaching"], answerIndex: 1 },
+  { stem: "Ocean acidification reduces the availability of which substance needed by corals?", options: ["Oxygen", "Algae", "Carbonate ions", "Salt"], answerIndex: 2 },
+  { stem: "Under projected end-of-century conditions, what may happen to reef-building species?", options: ["They will grow skeletons faster", "They may not keep pace with erosion", "They will migrate to freshwater", "They will become resistant to warming"], answerIndex: 1 },
+  { stem: "What is the purpose of selective breeding programmes mentioned in the passage?", options: ["To increase tourism", "To cultivate heat-tolerant coral strains", "To reduce carbon dioxide levels", "To study coral genetics only"], answerIndex: 1 },
+  { stem: "What does 'assisted gene flow' involve?", options: ["Moving corals from warmer to cooler reefs", "Breeding fish species", "Removing algae from corals", "Building artificial reefs"], answerIndex: 0 },
+  { stem: "According to marine biologists, what can these interventions achieve?", options: ["A permanent solution to reef loss", "Nothing significant", "Buying critical time for reefs to adapt", "Full reversal of ocean acidification"], answerIndex: 2 },
+  { stem: "What do scientists say is still necessary alongside these interventions?", options: ["More tourism", "Global reductions in greenhouse gas emissions", "Faster coral breeding only", "Stopping all fishing"], answerIndex: 1 }
+];
+
+function buildSegments(text, highlights) {
+  if (!highlights.length) return [{ text, plain: true, marked: false }];
+  let ranges = [];
+  highlights.forEach(h => {
+    const idx = text.indexOf(h.text);
+    if (idx !== -1) ranges.push({ start: idx, end: idx + h.text.length, cls: h.type === 'note' ? 'hl-note' : 'hl-yellow', note: h.note || '' });
+  });
+  if (!ranges.length) return [{ text, plain: true, marked: false }];
+  ranges.sort((a, b) => a.start - b.start);
+  let segments = [];
+  let cursor = 0;
+  ranges.forEach(r => {
+    if (r.start < cursor) return;
+    if (r.start > cursor) segments.push({ text: text.slice(cursor, r.start), plain: true, marked: false });
+    segments.push({ text: text.slice(r.start, r.end), plain: false, marked: true, markClass: r.cls, note: r.note });
+    cursor = r.end;
+  });
+  if (cursor < text.length) segments.push({ text: text.slice(cursor), plain: true, marked: false });
+  return segments;
+}
+
+class Component extends DCLogic {
+  state = {
+    currentQ: 1,
+    answers: {},
+    flagged: {},
+    highlights: [],
+    fontScale: 1,
+    lineSpacing: 'std',
+    theme: 'light',
+    leftWidth: 50,
+    timeLeft: 60 * 60,
+    settingsOpen: false,
+    helpOpen: false,
+    selectionPopup: { visible: false, x: 0, y: 0, text: '' }
+  };
+
+  qRefs = {};
+  dragging = false;
+
+  componentDidMount() {
+    this.timerId = setInterval(() => {
+      this.setState(s => ({ timeLeft: Math.max(0, s.timeLeft - 1) }));
+    }, 1000);
+    this._onMove = (e) => this.handleDragMove(e);
+    this._onUp = () => { this.dragging = false; };
+    window.addEventListener('mousemove', this._onMove);
+    window.addEventListener('mouseup', this._onUp);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.timerId);
+    window.removeEventListener('mousemove', this._onMove);
+    window.removeEventListener('mouseup', this._onUp);
+  }
+
+  startDrag = (e) => { e.preventDefault(); this.dragging = true; this.containerEl = e.currentTarget.parentElement; };
+
+  handleDragMove(e) {
+    if (!this.dragging || !this.containerEl) return;
+    const rect = this.containerEl.getBoundingClientRect();
+    let pct = ((e.clientX - rect.left) / rect.width) * 100;
+    pct = Math.max(25, Math.min(75, pct));
+    this.setState({ leftWidth: pct });
+  }
+
+  onMouseUp = (e) => {
+    const sel = window.getSelection();
+    const text = sel ? sel.toString().trim() : '';
+    if (!text || text.length < 2) {
+      if (this.state.selectionPopup.visible) this.setState({ selectionPopup: { visible: false, x: 0, y: 0, text: '' } });
+      return;
+    }
+    const range = sel.getRangeAt(0);
+    const rect = range.getBoundingClientRect();
+    this.setState({ selectionPopup: { visible: true, x: rect.left + rect.width / 2, y: rect.top - 8, text } });
+  };
+
+  applyHighlight = () => {
+    const text = this.state.selectionPopup.text;
+    if (text) this.setState(s => ({ highlights: [...s.highlights, { text, type: 'highlight' }], selectionPopup: { visible: false, x: 0, y: 0, text: '' } }));
+    window.getSelection().removeAllRanges();
+  };
+
+  applyNote = () => {
+    const text = this.state.selectionPopup.text;
+    if (!text) return;
+    const note = window.prompt('Add a note for: "' + text + '"', '');
+    if (note !== null) this.setState(s => ({ highlights: [...s.highlights, { text, type: 'note', note }], selectionPopup: { visible: false, x: 0, y: 0, text: '' } }));
+    window.getSelection().removeAllRanges();
+  };
+
+  applyClear = () => {
+    const text = this.state.selectionPopup.text;
+    this.setState(s => ({ highlights: s.highlights.filter(h => h.text !== text), selectionPopup: { visible: false, x: 0, y: 0, text: '' } }));
+    window.getSelection().removeAllRanges();
+  };
+
+  stopProp = (e) => e.stopPropagation();
+  nextPassage = () => window.alert('Moving to next passage...');
+  toggleSettings = () => this.setState(s => ({ settingsOpen: !s.settingsOpen, helpOpen: false }));
+  toggleHelp = () => this.setState(s => ({ helpOpen: !s.helpOpen, settingsOpen: false }));
+  incFont = () => this.setState(s => ({ fontScale: Math.min(1.4, +(s.fontScale + 0.1).toFixed(2)) }));
+  decFont = () => this.setState(s => ({ fontScale: Math.max(0.8, +(s.fontScale - 0.1).toFixed(2)) }));
+  resetFont = () => this.setState({ fontScale: 1 });
+  setSpacingStd = () => this.setState({ lineSpacing: 'std' });
+  setSpacingWide = () => this.setState({ lineSpacing: 'wide' });
+  setThemeLight = () => this.setState({ theme: 'light' });
+  setThemeDark = () => this.setState({ theme: 'dark' });
+
+  jumpTo = (n) => {
+    this.setState({ currentQ: n });
+    const el = this.qRefs[n];
+    if (el) {
+      const container = el.parentElement;
+      container.scrollTo({ top: el.offsetTop - container.offsetTop - 12, behavior: 'smooth' });
+    }
+  };
+
+  selectAnswer = (qId, letterIndex) => {
+    this.setState(s => ({ answers: { ...s.answers, [qId]: letterIndex }, currentQ: qId }));
+  };
+
+  toggleFlag = (qId) => {
+    this.setState(s => ({ flagged: { ...s.flagged, [qId]: !s.flagged[qId] } }));
+  };
+
+  renderVals() {
+    const s = this.state;
+    const mins = Math.floor(s.timeLeft / 60);
+    const secs = s.timeLeft % 60;
+    const timeDisplay = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+    const timerColor = s.timeLeft < 600 ? '#FCA5A5' : '#fff';
+
+    const isDark = s.theme === 'dark';
+    const theme = isDark ? {
+      bgApp: '#10151B', panelBg: '#1B232C', bgQuestionPanel: '#141A21', cardBg: '#1F2830',
+      border: '#2A343E', textPrimary: '#E7ECF1', textSecondary: '#93A1AF', textStrong: '#F5F7F9'
+    } : {
+      bgApp: '#EEF1F4', panelBg: '#fff', bgQuestionPanel: '#F8FAFC', cardBg: '#fff',
+      border: '#D8DEE4', textPrimary: '#1A2530', textSecondary: '#6B7684', textStrong: '#3A4653'
+    };
+
+    const paragraphs = PARA_TEXT.map(p => ({ label: p.label, segments: buildSegments(p.text, s.highlights) }));
+
+    const letters = ['A', 'B', 'C', 'D'];
+    const questions = QUESTION_DATA.map((q, idx) => {
+      const id = idx + 1;
+      const isCurrent = s.currentQ === id;
+      const isFlagged = !!s.flagged[id];
+      const answered = s.answers[id] !== undefined;
+      return {
+        id,
+        radioName: 'q' + id,
+        setRef: (el) => { this.qRefs[id] = el; },
+        borderColor: isCurrent ? '#0B4F8A' : '#E2E6EA',
+        shadow: isCurrent ? '0 0 0 2px rgba(11,79,138,0.15)' : 'none',
+        numBg: answered ? '#0B4F8A' : theme.border,
+        numColor: answered ? '#fff' : theme.textStrong,
+        stemSegments: buildSegments(q.stem, s.highlights),
+        flagFill: isFlagged ? '#F59E0B' : 'none',
+        flagStroke: isFlagged ? '#F59E0B' : '#9AA5B1',
+        toggleFlag: () => this.toggleFlag(id),
+        options: q.options.map((text, oi) => {
+          const checked = s.answers[id] === oi;
+          return {
+            letter: letters[oi],
+            text,
+            segments: buildSegments(text, s.highlights),
+            checked,
+            bg: checked ? '#EAF2FA' : 'transparent',
+            textColor: checked ? '#1A2530' : theme.textPrimary,
+            letterColor: checked ? '#3A4653' : theme.textStrong,
+            onSelect: () => this.selectAnswer(id, oi)
+          };
+        })
+      };
+    });
+
+    const navButtons = QUESTION_DATA.map((q, idx) => {
+      const id = idx + 1;
+      const answered = s.answers[id] !== undefined;
+      const isCurrent = s.currentQ === id;
+      return {
+        id,
+        flagged: !!s.flagged[id],
+        onClick: () => this.jumpTo(id),
+        bg: answered ? '#0B4F8A' : theme.cardBg,
+        color: answered ? '#fff' : theme.textPrimary,
+        border: isCurrent ? '2px solid #0B4F8A' : '1.5px solid ' + (answered ? theme.border : (isDark ? '#5B6672' : '#B0BAC4'))
+      };
+    });
+
+    return {
+      theme,
+      themeLightBg: !isDark ? '#0B4F8A' : theme.cardBg,
+      themeLightColor: !isDark ? '#fff' : theme.textSecondary,
+      themeLightBorder: !isDark ? '1px solid #0B4F8A' : '1px solid ' + theme.border,
+      themeDarkBg: isDark ? '#0B4F8A' : theme.cardBg,
+      themeDarkColor: isDark ? '#fff' : theme.textSecondary,
+      themeDarkBorder: isDark ? '1px solid #0B4F8A' : '1px solid ' + theme.border,
+      timeDisplay, timerColor,
+      settingsOpen: s.settingsOpen,
+      helpOpen: s.helpOpen,
+      toggleSettings: this.toggleSettings,
+      toggleHelp: this.toggleHelp,
+      stopProp: this.stopProp,
+      nextPassage: this.nextPassage,
+      decFont: this.decFont, incFont: this.incFont, resetFont: this.resetFont,
+      setSpacingStd: this.setSpacingStd, setSpacingWide: this.setSpacingWide,
+      setThemeLight: this.setThemeLight, setThemeDark: this.setThemeDark,
+      lineSpacingStdBg: s.lineSpacing === 'std' ? '#0B4F8A' : '#F4F6F8',
+      lineSpacingStdColor: s.lineSpacing === 'std' ? '#fff' : '#3A4653',
+      lineSpacingStdBorder: s.lineSpacing === 'std' ? '1px solid #0B4F8A' : '1px solid #D8DEE4',
+      lineSpacingWideBg: s.lineSpacing === 'wide' ? '#0B4F8A' : '#F4F6F8',
+      lineSpacingWideColor: s.lineSpacing === 'wide' ? '#fff' : '#3A4653',
+      lineSpacingWideBorder: s.lineSpacing === 'wide' ? '1px solid #0B4F8A' : '1px solid #D8DEE4',
+      selectionPopup: s.selectionPopup,
+      onMouseUp: this.onMouseUp,
+      applyHighlight: this.applyHighlight, applyNote: this.applyNote, applyClear: this.applyClear,
+      leftWidthStyle: s.leftWidth + '%',
+      startDrag: this.startDrag,
+      passageFontSize: Math.round(17 * s.fontScale),
+      questionFontSize: Math.round(14.5 * s.fontScale),
+      lineHeight: s.lineSpacing === 'wide' ? 2 : 1.75,
+      paragraphs, questions, navButtons
+    };
+  }
+}
+
+</script>
+</body>
+</html>

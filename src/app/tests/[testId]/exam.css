@@ -1,0 +1,34 @@
+/* Verbatim from design_handoff_ielts_reading/IELTS Reading Test.dc.html */
+mark.hl-yellow {
+  background: #fde68a;
+  color: #1a1a1a;
+  padding: 0 1px;
+  border-radius: 2px;
+}
+mark.hl-note {
+  background: #bfdbfe;
+  color: #1a1a1a;
+  padding: 0 1px;
+  border-radius: 2px;
+  border-bottom: 2px dotted #1d4ed8;
+  cursor: help;
+}
+.exam-root ::selection {
+  background: #bee3ff;
+}
+.navbtn:hover {
+  filter: brightness(0.97);
+}
+.toolbtn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+.answer-label:hover {
+  /* !important needed: the label's background is set via inline style
+     (transparent, or #EAF2FA when selected) which normally beats a plain
+     stylesheet rule. */
+  background: #eef3f8 !important;
+}
+.answer-label:hover span,
+.answer-label:hover mark {
+  color: #1a2530 !important;
+}
