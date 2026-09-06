@@ -2,12 +2,23 @@ import Link from "next/link";
 import { BookOpenCheck, LogOut } from "lucide-react";
 import { DarkModeToggle } from "@/components/common/darkmode-toggle";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase/server";
+import { getCurrentUserProfile } from "@/lib/supabase/require-admin";
 import { logout } from "./actions";
 
-export default function Home() {
+export default async function Home() {
+  const supabase = await createClient();
+  const { profile } = await getCurrentUserProfile(supabase);
+  const isAdmin = profile?.role === "admin";
+
   return (
     <div className="relative flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
       <div className="absolute top-4 right-4 flex items-center gap-2">
+        {isAdmin && (
+          <Link href="/admin" className={buttonVariants({ variant: "outline", size: "sm" })}>
+            Admin
+          </Link>
+        )}
         <DarkModeToggle />
         <form action={logout}>
           <Button type="submit" variant="ghost" size="icon" aria-label="Logout">
