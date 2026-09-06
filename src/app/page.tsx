@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { BookOpenCheck, LogOut } from "lucide-react";
+import { BookOpenCheck } from "lucide-react";
 import { DarkModeToggle } from "@/components/common/darkmode-toggle";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { LogoutForm } from "@/components/common/logout-form";
+import { buttonVariants } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUserProfile } from "@/lib/supabase/require-admin";
-import { logout } from "./actions";
 
 export default async function Home() {
   const supabase = await createClient();
@@ -20,11 +20,7 @@ export default async function Home() {
           </Link>
         )}
         <DarkModeToggle />
-        <form action={logout}>
-          <Button type="submit" variant="ghost" size="icon" aria-label="Logout">
-            <LogOut />
-          </Button>
-        </form>
+        <LogoutForm />
       </div>
 
       <div className="flex flex-col items-center gap-6 text-center">

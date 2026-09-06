@@ -13,6 +13,7 @@ import {
 import { FieldGroup } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { FormInputField } from "@/components/common/form-input-field";
+import { LoadingOverlay } from "@/components/common/loading-overlay";
 import {
   INITIAL_LOGIN_FORM,
   INITIAL_STATE_LOGIN_FORM,
@@ -52,6 +53,7 @@ export default function Login() {
 
   return (
     <Card>
+      {isPendingLogin && <LoadingOverlay label="Signing in…" />}
       <CardHeader className="text-center">
         <CardTitle className="text-xl">Welcome</CardTitle>
         <CardDescription>Login to access all features</CardDescription>

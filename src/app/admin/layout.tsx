@@ -2,6 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUserProfile } from "@/lib/supabase/require-admin";
+import { DarkModeToggle } from "@/components/common/darkmode-toggle";
+import { LogoutForm } from "@/components/common/logout-form";
 
 export default async function AdminLayout({
   children,
@@ -20,9 +22,16 @@ export default async function AdminLayout({
         <Link href="/admin" className="text-lg font-semibold">
           Admin — IELTS Reading Simulator
         </Link>
-        <Link href="/" className="text-sm text-muted-foreground underline underline-offset-4">
-          Back to Home
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/"
+            className="text-sm text-muted-foreground underline underline-offset-4"
+          >
+            Back to Home
+          </Link>
+          <DarkModeToggle />
+          <LogoutForm />
+        </div>
       </header>
       {children}
     </div>

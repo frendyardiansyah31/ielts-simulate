@@ -13,6 +13,7 @@ import {
 import { FieldGroup } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { FormInputField } from "@/components/common/form-input-field";
+import { LoadingOverlay } from "@/components/common/loading-overlay";
 import {
   INITIAL_REGISTER_FORM,
   INITIAL_STATE_REGISTER_FORM,
@@ -52,6 +53,7 @@ export default function Register() {
 
   return (
     <Card>
+      {isPendingRegister && <LoadingOverlay label="Creating account…" />}
       <CardHeader className="text-center">
         <CardTitle className="text-xl">Create an account</CardTitle>
         <CardDescription>Sign up to start practicing</CardDescription>
