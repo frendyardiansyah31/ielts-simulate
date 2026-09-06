@@ -80,6 +80,7 @@ export default async function AttemptResultPage({ params }: PageProps) {
         {attempt.questions.map((question) => (
           <QuestionReview
             key={question.id}
+            type={question.type}
             questionNumber={question.question_number}
             questionData={question.question_data}
             userAnswer={question.user_answer}

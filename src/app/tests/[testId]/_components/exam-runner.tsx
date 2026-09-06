@@ -6,12 +6,20 @@ import { useRouter } from "next/navigation";
 import { apiRequest } from "@/lib/api-client";
 import { buildSegments, type Highlight } from "../_lib/build-segments";
 import { getThemeTokens, type ExamTheme } from "../_lib/theme-tokens";
-import type { AttemptDetail, AttemptSummary, TestDetail } from "../_lib/types";
+import type {
+  AnswerValue,
+  AttemptDetail,
+  AttemptSummary,
+  GapQuestionData,
+  McQuestionData,
+  PublicQuestion,
+  TestDetail,
+} from "../_lib/types";
 import { TopBar } from "./top-bar";
 import { HelpModal } from "./help-modal";
 import { SelectionPopup } from "./selection-popup";
 import { PassagePanel } from "./passage-panel";
-import { QuestionPanel, type QuestionCardData } from "./question-panel";
+import { QuestionPanel, type GapPart, type QuestionCardData } from "./question-panel";
 import { BottomBar, type NavButtonData } from "./bottom-bar";
 
 type LineSpacing = "std" | "wide";
@@ -28,11 +36,62 @@ function splitParagraphs(content: string): { label: string; text: string }[] {
   return blocks.map((text, i) => ({ label: LETTERS[i] ?? String(i + 1), text }));
 }
 
+// summary_completion is stored one row per blank, all sharing one template —
+// group consecutive such rows so the passage renders the summary once with an
+// inline input per blank (same grouping the admin list does).
+type PanelItem =
+  | { kind: "mc"; question: PublicQuestion }
+  | { kind: "gap"; questions: PublicQuestion[] };
+
+function groupPassageQuestions(questions: PublicQuestion[]): PanelItem[] {
+  const items: PanelItem[] = [];
+  let i = 0;
+  while (i < questions.length) {
+    const q = questions[i];
+    if (q.type === "summary_completion") {
+      const template = (q.question_data as GapQuestionData).template;
+      const group: PublicQuestion[] = [q];
+      let j = i + 1;
+      while (
+        j < questions.length &&
+        questions[j].type === "summary_completion" &&
+        (questions[j].question_data as GapQuestionData).template === template
+      ) {
+        group.push(questions[j]);
+        j += 1;
+      }
+      items.push({ kind: "gap", questions: group });
+      i = j;
+    } else {
+      items.push({ kind: "mc", question: q });
+      i += 1;
+    }
+  }
+  return items;
+}
+
+function answerText(v: AnswerValue | undefined): string {
+  return v && "text" in v ? v.text : "";
+}
+
+function answerIndex(v: AnswerValue | undefined): number | undefined {
+  return v && "selected_index" in v ? v.selected_index : undefined;
+}
+
+function isAnswered(v: AnswerValue | undefined): boolean {
+  if (!v) return false;
+  if ("text" in v) return v.text.trim() !== "";
+  return true;
+}
+
 export function ExamRunner({ testId }: { testId: string }) {
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const draggingRef = useRef(false);
   const qRefs = useRef<Record<number, HTMLDivElement | null>>({});
+  const gapInputRefs = useRef<Record<number, HTMLInputElement | null>>({});
+  const saveTimers = useRef<Record<number, ReturnType<typeof setTimeout>>>({});
+  const pendingSaves = useRef<Record<number, { questionId: string; text: string }>>({});
 
   const [test, setTest] = useState<TestDetail | null>(null);
   const [attempt, setAttempt] = useState<AttemptRef | null>(null);
@@ -41,7 +100,7 @@ export function ExamRunner({ testId }: { testId: string }) {
 
   const [currentPassageIndex, setCurrentPassageIndex] = useState(0);
   const [currentQ, setCurrentQ] = useState<number | null>(null);
-  const [answers, setAnswers] = useState<Record<number, number>>({});
+  const [answers, setAnswers] = useState<Record<number, AnswerValue>>({});
   const [flagged, setFlagged] = useState<Record<number, boolean>>({});
   const [highlights, setHighlights] = useState<Highlight[]>([]);
 
@@ -80,10 +139,12 @@ export function ExamRunner({ testId }: { testId: string }) {
           setAttempt({ id: inProgress.id, started_at: inProgress.started_at });
           const detail = await apiRequest<AttemptDetail>(`/api/attempts/${inProgress.id}`);
           if (cancelled) return;
-          const restored: Record<number, number> = {};
+          const restored: Record<number, AnswerValue> = {};
           detail.questions.forEach((q) => {
             if (q.user_answer && typeof q.user_answer.selected_index === "number") {
-              restored[q.question_number] = q.user_answer.selected_index;
+              restored[q.question_number] = { selected_index: q.user_answer.selected_index };
+            } else if (q.user_answer && typeof q.user_answer.text === "string") {
+              restored[q.question_number] = { text: q.user_answer.text };
             }
           });
           setAnswers(restored);
@@ -120,10 +181,27 @@ export function ExamRunner({ testId }: { testId: string }) {
     return Math.max(0, Math.round((endMs - nowMs) / 1000));
   }, [attempt, test, nowMs]);
 
+  // Fire any debounced gap-fill saves right now (before submit / unmount) so a
+  // just-typed answer isn't lost.
+  function flushPendingSaves(): Promise<unknown> {
+    if (!attempt) return Promise.resolve();
+    const attemptId = attempt.id;
+    const saves = Object.entries(pendingSaves.current).map(([qn, payload]) => {
+      clearTimeout(saveTimers.current[Number(qn)]);
+      return apiRequest(`/api/attempts/${attemptId}/answers`, {
+        method: "PATCH",
+        body: JSON.stringify({ question_id: payload.questionId, user_answer: { text: payload.text } }),
+      }).catch((err) => console.error("Failed to save answer", err));
+    });
+    pendingSaves.current = {};
+    return Promise.all(saves);
+  }
+
   async function submitAttempt() {
     if (!attempt || isSubmitting) return;
     setIsSubmitting(true);
     try {
+      await flushPendingSaves();
       await apiRequest(`/api/attempts/${attempt.id}/submit`, { method: "POST" });
       router.push(`/attempts/${attempt.id}`);
     } catch (err) {
@@ -211,7 +289,7 @@ export function ExamRunner({ testId }: { testId: string }) {
   }
 
   function selectAnswer(questionId: string, questionNumber: number, optionIndex: number) {
-    setAnswers((prev) => ({ ...prev, [questionNumber]: optionIndex }));
+    setAnswers((prev) => ({ ...prev, [questionNumber]: { selected_index: optionIndex } }));
     setCurrentQ(questionNumber);
     if (!attempt) return;
     apiRequest(`/api/attempts/${attempt.id}/answers`, {
@@ -223,6 +301,22 @@ export function ExamRunner({ testId }: { testId: string }) {
     }).catch((err) => {
       console.error("Failed to save answer", err);
     });
+  }
+
+  function setGapAnswer(questionId: string, questionNumber: number, text: string) {
+    setAnswers((prev) => ({ ...prev, [questionNumber]: { text } }));
+    setCurrentQ(questionNumber);
+    if (!attempt) return;
+    const attemptId = attempt.id;
+    pendingSaves.current[questionNumber] = { questionId, text };
+    clearTimeout(saveTimers.current[questionNumber]);
+    saveTimers.current[questionNumber] = setTimeout(() => {
+      delete pendingSaves.current[questionNumber];
+      apiRequest(`/api/attempts/${attemptId}/answers`, {
+        method: "PATCH",
+        body: JSON.stringify({ question_id: questionId, user_answer: { text } }),
+      }).catch((err) => console.error("Failed to save answer", err));
+    }, 500);
   }
 
   function toggleFlag(questionNumber: number) {
@@ -305,35 +399,117 @@ export function ExamRunner({ testId }: { testId: string }) {
     segments: buildSegments(p.text, highlights),
   }));
 
-  const questionCards: QuestionCardData[] = currentPassage.questions.map((q) => {
-    const qn = q.question_number;
-    return {
-      id: qn,
-      isCurrent: currentQ === qn,
-      isFlagged: !!flagged[qn],
-      answered: answers[qn] !== undefined,
-      stemSegments: buildSegments(q.question_data.question_text, highlights),
-      onToggleFlag: () => toggleFlag(qn),
-      setRef: (el: HTMLDivElement | null) => {
-        qRefs.current[qn] = el;
-      },
-      options: q.question_data.options.map((text, oi) => ({
-        letter: LETTERS[oi] ?? String(oi + 1),
-        checked: answers[qn] === oi,
-        segments: buildSegments(text, highlights),
-        onSelect: () => selectAnswer(q.id, qn, oi),
-      })),
-    };
-  });
+  function goToQuestion(qn: number) {
+    setCurrentQ(qn);
+    const input = gapInputRefs.current[qn];
+    if (input) requestAnimationFrame(() => input.focus());
+  }
+
+  function setGroupFlag(numbers: number[]) {
+    const nextFlag = !numbers.some((n) => flagged[n]);
+    setFlagged((prev) => {
+      const copy = { ...prev };
+      numbers.forEach((n) => {
+        copy[n] = nextFlag;
+      });
+      return copy;
+    });
+  }
+
+  const questionCards: QuestionCardData[] = groupPassageQuestions(currentPassage.questions).map(
+    (item) => {
+      if (item.kind === "mc") {
+        const q = item.question;
+        const qn = q.question_number;
+        const data = q.question_data as McQuestionData;
+        return {
+          kind: "mc",
+          id: qn,
+          isCurrent: currentQ === qn,
+          isFlagged: !!flagged[qn],
+          answered: isAnswered(answers[qn]),
+          stemSegments: buildSegments(data.question_text, highlights),
+          onToggleFlag: () => toggleFlag(qn),
+          setRef: (el: HTMLDivElement | null) => {
+            qRefs.current[qn] = el;
+          },
+          options: data.options.map((text, oi) => ({
+            letter: LETTERS[oi] ?? String(oi + 1),
+            checked: answerIndex(answers[qn]) === oi,
+            segments: buildSegments(text, highlights),
+            onSelect: () => selectAnswer(q.id, qn, oi),
+          })),
+        };
+      }
+
+      const group = item.questions;
+      const data = group[0].question_data as GapQuestionData;
+      const numbers = group.map((g) => g.question_number);
+      const first = numbers[0];
+      const last = numbers[numbers.length - 1];
+
+      const parts: GapPart[] = [];
+      const regex = /___\d+___/g;
+      let cursor = 0;
+      let ordinal = 0;
+      for (let m = regex.exec(data.template); m !== null; m = regex.exec(data.template)) {
+        if (m.index > cursor) {
+          parts.push({ type: "text", text: data.template.slice(cursor, m.index) });
+        }
+        const gq = group[ordinal];
+        ordinal += 1;
+        if (gq) {
+          const gqn = gq.question_number;
+          const wordLimit = (gq.question_data as GapQuestionData).blanks?.[0]?.word_limit;
+          parts.push({
+            type: "blank",
+            blank: {
+              questionNumber: gqn,
+              value: answerText(answers[gqn]),
+              wordLimit,
+              isCurrent: currentQ === gqn,
+              onChange: (val: string) => setGapAnswer(gq.id, gqn, val),
+              setInputRef: (el: HTMLInputElement | null) => {
+                gapInputRefs.current[gqn] = el;
+              },
+            },
+          });
+        } else {
+          parts.push({ type: "text", text: m[0] });
+        }
+        cursor = regex.lastIndex;
+      }
+      if (cursor < data.template.length) {
+        parts.push({ type: "text", text: data.template.slice(cursor) });
+      }
+
+      return {
+        kind: "gap",
+        id: first,
+        isCurrent: currentQ != null && numbers.includes(currentQ),
+        isFlagged: numbers.some((n) => !!flagged[n]),
+        answered: numbers.every((n) => isAnswered(answers[n])),
+        instructions: data.instructions,
+        rangeLabel: first === last ? String(first) : `${first}–${last}`,
+        parts,
+        onToggleFlag: () => setGroupFlag(numbers),
+        setRef: (el: HTMLDivElement | null) => {
+          numbers.forEach((n) => {
+            qRefs.current[n] = el;
+          });
+        },
+      };
+    },
+  );
 
   const navButtons: NavButtonData[] = currentPassage.questions.map((q) => {
     const qn = q.question_number;
     return {
       id: qn,
-      answered: answers[qn] !== undefined,
+      answered: isAnswered(answers[qn]),
       isCurrent: currentQ === qn,
       flagged: !!flagged[qn],
-      onClick: () => setCurrentQ(qn),
+      onClick: () => goToQuestion(qn),
     };
   });
 

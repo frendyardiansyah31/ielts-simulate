@@ -5,11 +5,25 @@
  */
 type Grader = (questionData: unknown, userAnswer: unknown) => boolean;
 
+function normalize(text: string): string {
+  return text.trim().toLowerCase();
+}
+
 const gradersByType: Record<string, Grader> = {
   multiple_choice: (questionData, userAnswer) => {
     const q = questionData as { correct_index?: number };
     const a = userAnswer as { selected_index?: number } | null | undefined;
     return typeof a?.selected_index === "number" && a.selected_index === q.correct_index;
+  },
+  summary_completion: (questionData, userAnswer) => {
+    const q = questionData as { blanks?: { answer?: string }[] };
+    const a = userAnswer as { text?: string } | null | undefined;
+    const correctAnswer = q.blanks?.[0]?.answer;
+    return (
+      typeof a?.text === "string" &&
+      typeof correctAnswer === "string" &&
+      normalize(a.text) === normalize(correctAnswer)
+    );
   },
 };
 

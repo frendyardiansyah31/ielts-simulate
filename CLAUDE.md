@@ -4,12 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status
 
-This is an early-stage MVP (see `PRD_IELTS_Reading_Simulator_MVP.md`), currently mid-Week-1 of the timeline (§9). Treat `PRD_IELTS_Reading_Simulator_MVP.md` and `api-spec.md` as the spec to build toward, not a full description of existing code — but the following pieces already exist:
+This is an early-stage MVP (see `PRD_IELTS_Reading_Simulator_MVP.md`), now past Week 2 of the timeline (§9) for the `multiple_choice` question type specifically — see `.claude/CHECKPOINT.md` for the full, actively-maintained status table. Short version:
 
-- **Database:** only the `profiles` table (+ the `user_role` enum it depends on) has been applied live to the real Supabase project so far, created manually via the Studio SQL editor before this repo had a migrations folder (there's no Supabase CLI/`config.toml` set up — schema changes are pasted in by hand). Everything else — `reading_tests`, `reading_passages`, `reading_questions`, `user_attempts`, `user_answers`, all enums/triggers/RLS policies for them, and `profiles`' own trigger/RLS/policies — lives only in `supabase/migrations/20260905000000_create_remaining_schema.sql` and has **not** been applied yet. That file is written directly in final hardened form (cross-passage `question_number` uniqueness via denormalized `test_id`, RLS gated on `status = 'in_progress'`, publish-validation trigger) since there's no existing data to migrate. Apply it via the Studio SQL editor before relying on any of these tables — e.g. `GET /api/admin/tests`'s nested count query needs `reading_questions.test_id` to exist. `schema.sql` at the repo root mirrors this same final state and should stay in sync with the migrations folder when either changes.
-- **Auth:** full signup/login/logout is implemented — `src/lib/supabase/{client,server,middleware}.ts` are all real (not placeholders), `src/middleware.ts` wires `updateSession` in, and `src/app/(auth)/{login,register}/` have working Server Actions (`useActionState` + react-hook-form + Zod).
-- **Admin API:** `src/app/api/admin/tests/` — `GET`/`POST` (list, create) and `PATCH`/`DELETE` on `[testId]` (update incl. publish validation, delete). Passages and Questions admin endpoints are not built yet.
-- **Not yet built:** any admin UI (question-bank management screens), the passages/questions API, the user-facing test-taking flow, and `lib/scoring.ts`. `src/app/page.tsx` is still a minimal placeholder (logout button + dark mode toggle), not the real dashboard.
+- **Database:** full schema (`profiles`, `reading_tests`, `reading_passages`, `reading_questions`, `user_attempts`, `user_answers`, all enums/triggers/RLS) is applied live in Supabase. `schema.sql` at the repo root mirrors `supabase/migrations/20260905000000_create_remaining_schema.sql` — keep both in sync on any DB change.
+- **Auth:** full signup/login/logout — `src/lib/supabase/{client,server,middleware}.ts`, `src/middleware.ts`, `src/app/(auth)/{login,register}/`.
+- **Admin:** full CRUD API + UI for Test → Passage → Question (`multiple_choice` only), under `src/app/admin/`.
+- **User-facing:** full flow is built and deployed — home (`/`) → test list (`/tests`) → exam screen (`/tests/[testId]`, ported from `design_handoff_ielts_reading/`) → results (`/attempts/[attemptId]`).
+- **Not yet built:** the other 5 question types (`true_false_notgiven`, `matching_headings`, `matching_information`, `summary_completion`, `short_answer` — schema/validation/admin-form/render/grading all missing for each), attempt history list (PRD §5.3.D), and real IELTS-style test content (only one test exists, seeded with dummy Wikipedia passages for testing purposes).
+- **Deployed:** live on Vercel as of this session — see `.claude/CHECKPOINT.md` for what has and hasn't been human-verified post-deploy.
 
 ## Coding principles
 

@@ -6,6 +6,12 @@
  */
 const stripByType: Record<string, (data: Record<string, unknown>) => unknown> = {
   multiple_choice: ({ correct_index: _correct_index, ...rest }) => rest,
+  summary_completion: ({ blanks, ...rest }) => ({
+    ...rest,
+    blanks: Array.isArray(blanks)
+      ? blanks.map(({ answer: _answer, ...blankRest }) => blankRest)
+      : blanks,
+  }),
 };
 
 export function toPublicQuestionData(
