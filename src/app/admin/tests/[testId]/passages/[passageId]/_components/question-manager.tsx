@@ -5,8 +5,10 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { apiRequest } from "@/lib/api-client";
+import { tfngLabel } from "@/validations/true-false-notgiven-question-validation";
 import { MultipleChoiceQuestionForm } from "./multiple-choice-question-form";
 import { SummaryCompletionQuestionForm } from "./summary-completion-question-form";
+import { TrueFalseNotGivenQuestionForm } from "./true-false-notgiven-question-form";
 
 type MultipleChoiceQuestionData = {
   question_text: string;
@@ -18,6 +20,11 @@ type SummaryCompletionQuestionData = {
   instructions?: string;
   template: string;
   blanks: { number: number; answer: string; word_limit?: string }[];
+};
+
+type TrueFalseNotGivenQuestionData = {
+  statement: string;
+  correct_answer: string;
 };
 
 type QuestionRow =
@@ -34,10 +41,22 @@ type QuestionRow =
       type: "summary_completion";
       question_data: SummaryCompletionQuestionData;
       explanation: string | null;
+    }
+  | {
+      id: string;
+      question_number: number;
+      type: "true_false_notgiven";
+      question_data: TrueFalseNotGivenQuestionData;
+      explanation: string | null;
     };
 
+type SingleQuestion = Extract<
+  QuestionRow,
+  { type: "multiple_choice" | "true_false_notgiven" }
+>;
+
 type DisplayItem =
-  | { kind: "single"; question: Extract<QuestionRow, { type: "multiple_choice" }> }
+  | { kind: "single"; question: SingleQuestion }
   | { kind: "summary_group"; questions: Extract<QuestionRow, { type: "summary_completion" }>[] };
 
 // summary_completion is stored as one row per blank sharing an identical
@@ -82,9 +101,9 @@ export function QuestionManager({
   nextQuestionNumber: number;
 }) {
   const router = useRouter();
-  const [creatingType, setCreatingType] = useState<"multiple_choice" | "summary_completion" | null>(
-    null,
-  );
+  const [creatingType, setCreatingType] = useState<
+    "multiple_choice" | "summary_completion" | "true_false_notgiven" | null
+  >(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -127,6 +146,13 @@ export function QuestionManager({
             <Button size="sm" variant="outline" onClick={() => setCreatingType("summary_completion")}>
               + Fill in the Blank
             </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setCreatingType("true_false_notgiven")}
+            >
+              + True / False / Not Given
+            </Button>
           </div>
         )}
       </div>
@@ -152,6 +178,16 @@ export function QuestionManager({
         />
       )}
 
+      {creatingType === "true_false_notgiven" && (
+        <TrueFalseNotGivenQuestionForm
+          mode="create"
+          passageId={passageId}
+          nextQuestionNumber={nextQuestionNumber}
+          onDone={() => setCreatingType(null)}
+          onCancel={() => setCreatingType(null)}
+        />
+      )}
+
       {questions.length === 0 && !creatingType && (
         <Card className="items-center p-6 text-center text-sm text-muted-foreground">
           No questions in this passage yet.
@@ -163,7 +199,21 @@ export function QuestionManager({
           const question = item.question;
 
           if (editingId === question.id) {
-            return (
+            return question.type === "true_false_notgiven" ? (
+              <TrueFalseNotGivenQuestionForm
+                key={question.id}
+                mode="edit"
+                questionId={question.id}
+                initial={{
+                  question_number: question.question_number,
+                  statement: question.question_data.statement,
+                  correct_answer: question.question_data.correct_answer,
+                  explanation: question.explanation,
+                }}
+                onDone={() => setEditingId(null)}
+                onCancel={() => setEditingId(null)}
+              />
+            ) : (
               <MultipleChoiceQuestionForm
                 key={question.id}
                 mode="edit"
@@ -181,11 +231,16 @@ export function QuestionManager({
             );
           }
 
+          const stem =
+            question.type === "true_false_notgiven"
+              ? question.question_data.statement
+              : question.question_data.question_text;
+
           return (
             <Card key={question.id} className="gap-2 px-4">
               <div className="flex items-start justify-between gap-4">
                 <p className="font-medium">
-                  {question.question_number}. {question.question_data.question_text}
+                  {question.question_number}. {stem}
                 </p>
                 <div className="flex shrink-0 gap-2">
                   <Button variant="outline" size="sm" onClick={() => setEditingId(question.id)}>
@@ -196,21 +251,27 @@ export function QuestionManager({
                   </Button>
                 </div>
               </div>
-              <ul className="flex flex-col gap-1 text-sm">
-                {question.question_data.options.map((option, index) => (
-                  <li
-                    key={index}
-                    className={
-                      index === question.question_data.correct_index
-                        ? "font-medium text-primary"
-                        : "text-muted-foreground"
-                    }
-                  >
-                    {String.fromCharCode(65 + index)}. {option}
-                    {index === question.question_data.correct_index && " ✓"}
-                  </li>
-                ))}
-              </ul>
+              {question.type === "true_false_notgiven" ? (
+                <p className="text-sm text-muted-foreground">
+                  Answer: {tfngLabel(question.question_data.correct_answer)}
+                </p>
+              ) : (
+                <ul className="flex flex-col gap-1 text-sm">
+                  {question.question_data.options.map((option, index) => (
+                    <li
+                      key={index}
+                      className={
+                        index === question.question_data.correct_index
+                          ? "font-medium text-primary"
+                          : "text-muted-foreground"
+                      }
+                    >
+                      {String.fromCharCode(65 + index)}. {option}
+                      {index === question.question_data.correct_index && " ✓"}
+                    </li>
+                  ))}
+                </ul>
+              )}
               {question.explanation && (
                 <p className="text-sm text-muted-foreground">Explanation: {question.explanation}</p>
               )}

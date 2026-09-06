@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { tfngLabel } from "@/validations/true-false-notgiven-question-validation";
 
 type MultipleChoiceData = {
   question_text: string;
@@ -13,13 +14,18 @@ type SummaryCompletionData = {
   blanks: { number: number; answer: string; word_limit?: string }[];
 };
 
+type TrueFalseNotGivenData = {
+  statement: string;
+  correct_answer: string;
+};
+
 const LETTERS = ["A", "B", "C", "D", "E"];
 
 type QuestionReviewProps = {
   type: string;
   questionNumber: number;
-  questionData: MultipleChoiceData | SummaryCompletionData;
-  userAnswer: { selected_index?: number; text?: string } | null;
+  questionData: MultipleChoiceData | SummaryCompletionData | TrueFalseNotGivenData;
+  userAnswer: { selected_index?: number; text?: string; answer?: string } | null;
   isCorrect: boolean | null;
   explanation: string | null;
 };
@@ -72,6 +78,42 @@ export function QuestionReview({
         <p className="text-sm">
           <span className="text-muted-foreground">Correct answer: </span>
           <span className="font-medium text-green-700 dark:text-green-400">{blank?.answer}</span>
+        </p>
+        {explanation && (
+          <p className="text-sm text-muted-foreground">Explanation: {explanation}</p>
+        )}
+      </Card>
+    );
+  }
+
+  if (type === "true_false_notgiven") {
+    const data = questionData as TrueFalseNotGivenData;
+    const picked = userAnswer?.answer;
+    const answered = typeof picked === "string" && picked !== "";
+
+    return (
+      <Card className="gap-2 px-4">
+        <div className="flex items-start justify-between gap-3">
+          <p className="font-medium">
+            {questionNumber}. {data.statement}
+          </p>
+          <StatusBadge isCorrect={isCorrect} answered={answered} />
+        </div>
+        <p className="text-sm">
+          <span className="text-muted-foreground">Your answer: </span>
+          {answered ? (
+            <span className={isCorrect ? "text-green-700 dark:text-green-400" : "text-destructive"}>
+              {tfngLabel(picked)}
+            </span>
+          ) : (
+            <span className="text-muted-foreground">—</span>
+          )}
+        </p>
+        <p className="text-sm">
+          <span className="text-muted-foreground">Correct answer: </span>
+          <span className="font-medium text-green-700 dark:text-green-400">
+            {tfngLabel(data.correct_answer)}
+          </span>
         </p>
         {explanation && (
           <p className="text-sm text-muted-foreground">Explanation: {explanation}</p>

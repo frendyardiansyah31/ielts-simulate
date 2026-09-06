@@ -25,6 +25,11 @@ const gradersByType: Record<string, Grader> = {
       normalize(a.text) === normalize(correctAnswer)
     );
   },
+  true_false_notgiven: (questionData, userAnswer) => {
+    const q = questionData as { correct_answer?: string };
+    const a = userAnswer as { answer?: string } | null | undefined;
+    return typeof a?.answer === "string" && a.answer === q.correct_answer;
+  },
 };
 
 export function gradeAnswer(

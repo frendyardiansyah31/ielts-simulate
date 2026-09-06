@@ -12,6 +12,7 @@ const stripByType: Record<string, (data: Record<string, unknown>) => unknown> = 
       ? blanks.map(({ answer: _answer, ...blankRest }) => blankRest)
       : blanks,
   }),
+  true_false_notgiven: ({ correct_answer: _correct_answer, ...rest }) => rest,
 };
 
 export function toPublicQuestionData(

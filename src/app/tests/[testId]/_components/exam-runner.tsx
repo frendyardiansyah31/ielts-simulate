@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { apiRequest } from "@/lib/api-client";
 import { buildSegments, type Highlight } from "../_lib/build-segments";
 import { getThemeTokens, type ExamTheme } from "../_lib/theme-tokens";
+import { TFNG_CHOICES } from "@/validations/true-false-notgiven-question-validation";
 import type {
   AnswerValue,
   AttemptDetail,
@@ -14,6 +15,7 @@ import type {
   McQuestionData,
   PublicQuestion,
   TestDetail,
+  TfngQuestionData,
 } from "../_lib/types";
 import { TopBar } from "./top-bar";
 import { HelpModal } from "./help-modal";
@@ -41,6 +43,7 @@ function splitParagraphs(content: string): { label: string; text: string }[] {
 // inline input per blank (same grouping the admin list does).
 type PanelItem =
   | { kind: "mc"; question: PublicQuestion }
+  | { kind: "tfng"; question: PublicQuestion }
   | { kind: "gap"; questions: PublicQuestion[] };
 
 function groupPassageQuestions(questions: PublicQuestion[]): PanelItem[] {
@@ -62,6 +65,9 @@ function groupPassageQuestions(questions: PublicQuestion[]): PanelItem[] {
       }
       items.push({ kind: "gap", questions: group });
       i = j;
+    } else if (q.type === "true_false_notgiven") {
+      items.push({ kind: "tfng", question: q });
+      i += 1;
     } else {
       items.push({ kind: "mc", question: q });
       i += 1;
@@ -78,9 +84,14 @@ function answerIndex(v: AnswerValue | undefined): number | undefined {
   return v && "selected_index" in v ? v.selected_index : undefined;
 }
 
+function answerChoice(v: AnswerValue | undefined): string | undefined {
+  return v && "answer" in v ? v.answer : undefined;
+}
+
 function isAnswered(v: AnswerValue | undefined): boolean {
   if (!v) return false;
   if ("text" in v) return v.text.trim() !== "";
+  if ("answer" in v) return v.answer !== "";
   return true;
 }
 
@@ -145,6 +156,8 @@ export function ExamRunner({ testId }: { testId: string }) {
               restored[q.question_number] = { selected_index: q.user_answer.selected_index };
             } else if (q.user_answer && typeof q.user_answer.text === "string") {
               restored[q.question_number] = { text: q.user_answer.text };
+            } else if (q.user_answer && typeof q.user_answer.answer === "string") {
+              restored[q.question_number] = { answer: q.user_answer.answer };
             }
           });
           setAnswers(restored);
@@ -303,6 +316,21 @@ export function ExamRunner({ testId }: { testId: string }) {
     });
   }
 
+  function selectChoice(questionId: string, questionNumber: number, choice: string) {
+    setAnswers((prev) => ({ ...prev, [questionNumber]: { answer: choice } }));
+    setCurrentQ(questionNumber);
+    if (!attempt) return;
+    apiRequest(`/api/attempts/${attempt.id}/answers`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        question_id: questionId,
+        user_answer: { answer: choice },
+      }),
+    }).catch((err) => {
+      console.error("Failed to save answer", err);
+    });
+  }
+
   function setGapAnswer(questionId: string, questionNumber: number, text: string) {
     setAnswers((prev) => ({ ...prev, [questionNumber]: { text } }));
     setCurrentQ(questionNumber);
@@ -438,6 +466,30 @@ export function ExamRunner({ testId }: { testId: string }) {
             checked: answerIndex(answers[qn]) === oi,
             segments: buildSegments(text, highlights),
             onSelect: () => selectAnswer(q.id, qn, oi),
+          })),
+        };
+      }
+
+      if (item.kind === "tfng") {
+        const q = item.question;
+        const qn = q.question_number;
+        const data = q.question_data as TfngQuestionData;
+        return {
+          kind: "tfng",
+          id: qn,
+          isCurrent: currentQ === qn,
+          isFlagged: !!flagged[qn],
+          answered: isAnswered(answers[qn]),
+          stemSegments: buildSegments(data.statement, highlights),
+          onToggleFlag: () => toggleFlag(qn),
+          setRef: (el: HTMLDivElement | null) => {
+            qRefs.current[qn] = el;
+          },
+          options: TFNG_CHOICES.map((choice) => ({
+            value: choice.value,
+            label: choice.label,
+            checked: answerChoice(answers[qn]) === choice.value,
+            onSelect: () => selectChoice(q.id, qn, choice.value),
           })),
         };
       }

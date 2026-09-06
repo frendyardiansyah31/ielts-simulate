@@ -43,7 +43,20 @@ export type GapCardData = CardBase & {
   parts: GapPart[];
 };
 
-export type QuestionCardData = McCardData | GapCardData;
+export type TfngOptionData = {
+  value: string;
+  label: string;
+  checked: boolean;
+  onSelect: () => void;
+};
+
+export type TfngCardData = CardBase & {
+  kind: "tfng";
+  stemSegments: Segment[];
+  options: TfngOptionData[];
+};
+
+export type QuestionCardData = McCardData | GapCardData | TfngCardData;
 
 type QuestionPanelProps = {
   theme: ThemeTokens;
@@ -254,6 +267,61 @@ function GapCard({
   );
 }
 
+function TfngCard({
+  q,
+  theme,
+  fontSize,
+  lineHeight,
+}: {
+  q: TfngCardData;
+  theme: ThemeTokens;
+  fontSize: number;
+  lineHeight: number;
+}) {
+  return (
+    <>
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 12 }}>
+        <NumberBadge label={q.id} answered={q.answered} theme={theme} />
+        <div style={{ flex: 1, fontSize, lineHeight, fontWeight: 500, color: theme.textPrimary }}>
+          {renderSegments(q.stemSegments)}
+        </div>
+        <FlagButton isFlagged={q.isFlagged} onToggleFlag={q.onToggleFlag} />
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, paddingLeft: 36 }}>
+        {q.options.map((opt) => (
+          <label
+            key={opt.value}
+            className="answer-label"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              padding: "8px 10px",
+              borderRadius: 6,
+              cursor: "pointer",
+              background: opt.checked ? "#EAF2FA" : "transparent",
+              fontSize,
+            }}
+          >
+            <input
+              type="radio"
+              name={`q${q.id}`}
+              checked={opt.checked}
+              onChange={opt.onSelect}
+              style={{ accentColor: "#0B4F8A", width: 16, height: 16 }}
+            />
+            <span
+              style={{ fontWeight: 600, color: opt.checked ? "#1A2530" : theme.textStrong }}
+            >
+              {opt.label}
+            </span>
+          </label>
+        ))}
+      </div>
+    </>
+  );
+}
+
 export function QuestionPanel({
   theme,
   questionRangeLabel,
@@ -299,8 +367,10 @@ export function QuestionPanel({
         >
           {q.kind === "mc" ? (
             <McCard q={q} theme={theme} fontSize={fontSize} lineHeight={lineHeight} />
-          ) : (
+          ) : q.kind === "gap" ? (
             <GapCard q={q} theme={theme} fontSize={fontSize} lineHeight={lineHeight} />
+          ) : (
+            <TfngCard q={q} theme={theme} fontSize={fontSize} lineHeight={lineHeight} />
           )}
         </div>
       ))}

@@ -14,11 +14,15 @@ export type GapQuestionData = {
   blanks: GapBlankPublic[];
 };
 
+export type TfngQuestionData = {
+  statement: string;
+};
+
 export type PublicQuestion = {
   id: string;
   question_number: number;
   type: string;
-  question_data: McQuestionData | GapQuestionData;
+  question_data: McQuestionData | GapQuestionData | TfngQuestionData;
 };
 
 export type PublicPassage = {
@@ -38,7 +42,10 @@ export type TestDetail = {
 
 // One saved answer, shape depends on the question type (mirrors what the
 // autosave endpoint stores in user_answers.user_answer).
-export type AnswerValue = { selected_index: number } | { text: string };
+export type AnswerValue =
+  | { selected_index: number }
+  | { text: string }
+  | { answer: string };
 
 export type AttemptSummary = {
   id: string;
@@ -54,7 +61,7 @@ export type AttemptDetailQuestion = {
   id: string;
   question_number: number;
   type: string;
-  user_answer: { selected_index?: number; text?: string } | null;
+  user_answer: { selected_index?: number; text?: string; answer?: string } | null;
 };
 
 export type AttemptDetail = AttemptSummary & { questions: AttemptDetailQuestion[] };

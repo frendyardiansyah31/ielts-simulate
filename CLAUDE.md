@@ -8,9 +8,9 @@ This is an early-stage MVP (see `PRD_IELTS_Reading_Simulator_MVP.md`), now past 
 
 - **Database:** full schema (`profiles`, `reading_tests`, `reading_passages`, `reading_questions`, `user_attempts`, `user_answers`, all enums/triggers/RLS) is applied live in Supabase. `schema.sql` at the repo root mirrors `supabase/migrations/20260905000000_create_remaining_schema.sql` — keep both in sync on any DB change.
 - **Auth:** full signup/login/logout — `src/lib/supabase/{client,server,middleware}.ts`, `src/middleware.ts`, `src/app/(auth)/{login,register}/`.
-- **Admin:** full CRUD API + UI for Test → Passage → Question (`multiple_choice` only), under `src/app/admin/`.
+- **Admin:** full CRUD API + UI for Test → Passage → Question, under `src/app/admin/`. Three question types are wired end-to-end (admin form + exam render + grading + results review): `multiple_choice`, `summary_completion`, `true_false_notgiven`.
 - **User-facing:** full flow is built and deployed — home (`/`) → test list (`/tests`) → exam screen (`/tests/[testId]`, ported from `design_handoff_ielts_reading/`) → results (`/attempts/[attemptId]`).
-- **Not yet built:** the other 5 question types (`true_false_notgiven`, `matching_headings`, `matching_information`, `summary_completion`, `short_answer` — schema/validation/admin-form/render/grading all missing for each), attempt history list (PRD §5.3.D), and real IELTS-style test content (only one test exists, seeded with dummy Wikipedia passages for testing purposes).
+- **Not yet built:** the other 3 question types (`matching_headings`, `matching_information`, `short_answer` — schema/validation/admin-form/render/grading all missing for each), attempt history list (PRD §5.3.D), and real IELTS-style test content (dummy content only — see `.claude/CHECKPOINT.md`).
 - **Deployed:** live on Vercel as of this session — see `.claude/CHECKPOINT.md` for what has and hasn't been human-verified post-deploy.
 
 ## Coding principles
