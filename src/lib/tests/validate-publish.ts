@@ -17,11 +17,11 @@ export async function validatePublishReady(
     .order("passage_number", { ascending: true });
 
   if (error) {
-    return "Gagal memeriksa passage untuk test ini";
+    return "Failed to check passages for this test";
   }
 
   if (!passages || passages.length !== 3) {
-    return `Test harus punya tepat 3 passage sebelum dipublish (sekarang: ${passages?.length ?? 0})`;
+    return `A test must have exactly 3 passages before publishing (currently: ${passages?.length ?? 0})`;
   }
 
   for (const passage of passages) {
@@ -31,11 +31,11 @@ export async function validatePublishReady(
       .eq("passage_id", passage.id);
 
     if (countError) {
-      return "Gagal memeriksa soal untuk passage ini";
+      return "Failed to check questions for this passage";
     }
 
     if (!count) {
-      return `Passage ${passage.passage_number} belum ada soal`;
+      return `Passage ${passage.passage_number} has no questions yet`;
     }
   }
 

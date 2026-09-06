@@ -18,15 +18,15 @@ export default async function TestListPage() {
   return (
     <div className="mx-auto flex min-h-screen max-w-3xl flex-col gap-6 p-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Daftar Test</h1>
+        <h1 className="text-xl font-semibold">Tests</h1>
         <Link href="/" className="text-sm text-muted-foreground underline-offset-4 hover:underline">
-          Kembali ke Home
+          Back to Home
         </Link>
       </div>
 
       {tests.length === 0 ? (
         <Card className="items-center p-8 text-center text-sm text-muted-foreground">
-          Belum ada test yang dipublish.
+          No published tests yet.
         </Card>
       ) : (
         <div className="flex flex-col gap-3">
@@ -35,18 +35,18 @@ export default async function TestListPage() {
               <div className="flex flex-col gap-1">
                 <p className="font-medium">{test.title}</p>
                 <p className="text-sm text-muted-foreground">
-                  {test.question_count} soal · {test.time_limit_minutes} menit
+                  {test.question_count} questions · {test.time_limit_minutes} min
                   {test.last_attempt && (
                     <>
                       {" "}
-                      · Terakhir: {test.last_attempt.raw_score}/{test.question_count} (Band{" "}
+                      · Last: {test.last_attempt.raw_score}/{test.question_count} (Band{" "}
                       {test.last_attempt.band_score_estimate})
                     </>
                   )}
                 </p>
               </div>
               <Link href={`/tests/${test.id}`} className={buttonVariants({ size: "sm" })}>
-                {test.last_attempt ? "Ulangi" : "Mulai"}
+                {test.last_attempt ? "Retake" : "Start"}
               </Link>
             </Card>
           ))}

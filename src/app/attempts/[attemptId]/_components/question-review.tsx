@@ -37,7 +37,7 @@ export function QuestionReview({
           {questionNumber}. {questionData.question_text}
         </p>
         <Badge variant={isCorrect ? "success" : answered ? "destructive" : "neutral"}>
-          {isCorrect ? "Benar" : answered ? "Salah" : "Tidak dijawab"}
+          {isCorrect ? "Correct" : answered ? "Incorrect" : "Not answered"}
         </Badge>
       </div>
       <ul className="flex flex-col gap-1 text-sm">
@@ -57,7 +57,7 @@ export function QuestionReview({
             >
               {LETTERS[index] ?? index + 1}. {option}
               {isCorrectOption && " ✓"}
-              {isUserPick && !isCorrectOption && " (jawaban kamu)"}
+              {isUserPick && !isCorrectOption && " (your answer)"}
             </li>
           );
         })}

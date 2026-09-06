@@ -21,7 +21,7 @@ export default async function AdminLayout({
           Admin — IELTS Reading Simulator
         </Link>
         <Link href="/" className="text-sm text-muted-foreground underline underline-offset-4">
-          Kembali ke Home
+          Back to Home
         </Link>
       </header>
       {children}

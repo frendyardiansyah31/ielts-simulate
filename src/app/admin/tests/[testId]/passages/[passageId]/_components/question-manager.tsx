@@ -37,23 +37,23 @@ export function QuestionManager({
     questions.length > 0 ? Math.max(...questions.map((q) => q.question_number)) + 1 : 1;
 
   async function deleteQuestion(question: QuestionRow) {
-    if (!window.confirm(`Hapus soal nomor ${question.question_number}?`)) return;
+    if (!window.confirm(`Delete question number ${question.question_number}?`)) return;
     setError(null);
     try {
       await apiRequest(`/api/admin/questions/${question.id}`, { method: "DELETE" });
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Gagal menghapus soal");
+      setError(err instanceof Error ? err.message : "Failed to delete question");
     }
   }
 
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Soal ({questions.length})</h2>
+        <h2 className="text-lg font-semibold">Questions ({questions.length})</h2>
         {!isCreating && (
           <Button size="sm" onClick={() => setIsCreating(true)}>
-            Tambah Soal
+            Add Question
           </Button>
         )}
       </div>
@@ -72,7 +72,7 @@ export function QuestionManager({
 
       {questions.length === 0 && !isCreating && (
         <Card className="items-center p-6 text-center text-sm text-muted-foreground">
-          Belum ada soal di passage ini.
+          No questions in this passage yet.
         </Card>
       )}
 
@@ -107,7 +107,7 @@ export function QuestionManager({
                   Edit
                 </Button>
                 <Button variant="destructive" size="sm" onClick={() => deleteQuestion(question)}>
-                  Hapus
+                  Delete
                 </Button>
               </div>
             </div>

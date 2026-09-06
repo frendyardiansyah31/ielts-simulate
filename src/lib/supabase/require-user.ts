@@ -21,7 +21,7 @@ export async function requireUser(): Promise<RequireUserResult> {
     return {
       ok: false,
       response: NextResponse.json(
-        { error: { message: "Belum login", code: "UNAUTHENTICATED" } },
+        { error: { message: "Not logged in", code: "UNAUTHENTICATED" } },
         { status: 401 },
       ),
     };

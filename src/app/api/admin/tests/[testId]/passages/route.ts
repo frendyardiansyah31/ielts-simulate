@@ -37,7 +37,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json(
       {
         error: {
-          message: "Validasi gagal",
+          message: "Validation failed",
           code: "VALIDATION_ERROR",
           details: flattenError(validatedFields.error).fieldErrors,
         },
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json(
         {
           error: {
-            message: `Passage nomor ${passage_number} sudah ada di test ini`,
+            message: `Passage number ${passage_number} already exists in this test`,
             code: "VALIDATION_ERROR",
           },
         },

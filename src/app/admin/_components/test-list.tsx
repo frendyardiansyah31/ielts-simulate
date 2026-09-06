@@ -25,14 +25,14 @@ export function TestList({ tests }: { tests: AdminTestListItem[] }) {
       });
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Gagal mengubah status");
+      setError(err instanceof Error ? err.message : "Failed to change status");
     } finally {
       setPendingId(null);
     }
   }
 
   async function deleteTest(test: AdminTestListItem) {
-    if (!window.confirm(`Hapus test "${test.title}"? Semua passage & soal ikut terhapus.`)) {
+    if (!window.confirm(`Delete test "${test.title}"? All passages & questions will be deleted too.`)) {
       return;
     }
     setError(null);
@@ -41,7 +41,7 @@ export function TestList({ tests }: { tests: AdminTestListItem[] }) {
       await apiRequest(`/api/admin/tests/${test.id}`, { method: "DELETE" });
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Gagal menghapus test");
+      setError(err instanceof Error ? err.message : "Failed to delete test");
     } finally {
       setPendingId(null);
     }
@@ -50,7 +50,7 @@ export function TestList({ tests }: { tests: AdminTestListItem[] }) {
   if (tests.length === 0) {
     return (
       <Card className="items-center p-8 text-center text-sm text-muted-foreground">
-        Belum ada test. Klik &quot;Buat Test Baru&quot; untuk mulai.
+        No tests yet. Click &quot;New Test&quot; to get started.
       </Card>
     );
   }
@@ -70,7 +70,7 @@ export function TestList({ tests }: { tests: AdminTestListItem[] }) {
               </Badge>
             </div>
             <p className="text-sm text-muted-foreground">
-              {test.passage_count} passage · {test.question_count} soal · {test.time_limit_minutes} menit
+              {test.passage_count} passages · {test.question_count} questions · {test.time_limit_minutes} min
             </p>
           </div>
           <div className="flex shrink-0 gap-2">
@@ -88,7 +88,7 @@ export function TestList({ tests }: { tests: AdminTestListItem[] }) {
               disabled={pendingId === test.id}
               onClick={() => deleteTest(test)}
             >
-              Hapus
+              Delete
             </Button>
           </div>
         </Card>

@@ -11,9 +11,9 @@ export default async function AdminHomePage() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Daftar Test</h1>
+        <h1 className="text-xl font-semibold">Tests</h1>
         <Link href="/admin/tests/new" className={buttonVariants()}>
-          Buat Test Baru
+          New Test
         </Link>
       </div>
       <TestList tests={tests} />

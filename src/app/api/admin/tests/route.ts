@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: {
-          message: "Validasi gagal",
+          message: "Validation failed",
           code: "VALIDATION_ERROR",
           details: flattenError(validatedFields.error).fieldErrors,
         },

@@ -26,7 +26,7 @@ export async function POST(_request: NextRequest, { params }: RouteParams) {
 
   if (!attempt) {
     return NextResponse.json(
-      { error: { message: "Attempt tidak ditemukan", code: "NOT_FOUND" } },
+      { error: { message: "Attempt not found", code: "NOT_FOUND" } },
       { status: 404 },
     );
   }
@@ -35,7 +35,7 @@ export async function POST(_request: NextRequest, { params }: RouteParams) {
     return NextResponse.json(
       {
         error: {
-          message: "Attempt sudah disubmit sebelumnya",
+          message: "Attempt was already submitted",
           code: "ATTEMPT_ALREADY_SUBMITTED",
         },
       },

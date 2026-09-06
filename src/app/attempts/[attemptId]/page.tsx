@@ -15,7 +15,7 @@ function formatDuration(startedAt: string, submittedAt: string): string {
   );
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
-  return `${minutes} menit ${seconds} detik`;
+  return `${minutes} min ${seconds} sec`;
 }
 
 export default async function AttemptResultPage({ params }: PageProps) {
@@ -34,9 +34,9 @@ export default async function AttemptResultPage({ params }: PageProps) {
   if (attempt.status !== "submitted") {
     return (
       <div className="mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center gap-4 p-6 text-center">
-        <p className="text-lg font-medium">Test ini belum disubmit.</p>
+        <p className="text-lg font-medium">This test has not been submitted yet.</p>
         <Link href={`/tests/${attempt.test_id}`} className={buttonVariants()}>
-          Lanjutkan Mengerjakan
+          Continue Test
         </Link>
       </div>
     );
@@ -50,28 +50,28 @@ export default async function AttemptResultPage({ params }: PageProps) {
         <div className="flex flex-col gap-1">
           <h1 className="text-xl font-semibold">{attempt.test_title}</h1>
           <p className="text-sm text-muted-foreground">
-            Disubmit{" "}
-            {new Date(attempt.submitted_at!).toLocaleString("id-ID", {
+            Submitted{" "}
+            {new Date(attempt.submitted_at!).toLocaleString("en-US", {
               dateStyle: "medium",
               timeStyle: "short",
             })}{" "}
-            · Waktu pengerjaan: {formatDuration(attempt.started_at, attempt.submitted_at!)}
+            · Time taken: {formatDuration(attempt.started_at, attempt.submitted_at!)}
           </p>
         </div>
         <Link href="/tests" className="text-sm text-muted-foreground underline-offset-4 hover:underline">
-          Kembali ke Daftar Test
+          Back to Tests
         </Link>
       </div>
 
       <Card className="flex-row items-center gap-8 px-6 py-5">
         <div>
-          <p className="text-sm text-muted-foreground">Skor</p>
+          <p className="text-sm text-muted-foreground">Score</p>
           <p className="text-3xl font-semibold">
             {attempt.raw_score}/{totalQuestions}
           </p>
         </div>
         <div>
-          <p className="text-sm text-muted-foreground">Estimasi Band Score</p>
+          <p className="text-sm text-muted-foreground">Estimated Band Score</p>
           <p className="text-3xl font-semibold">{attempt.band_score_estimate}</p>
         </div>
       </Card>

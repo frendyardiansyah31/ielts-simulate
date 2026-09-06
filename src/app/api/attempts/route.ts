@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: {
-          message: "Validasi gagal",
+          message: "Validation failed",
           code: "VALIDATION_ERROR",
           details: flattenError(validatedFields.error).fieldErrors,
         },
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
 
   if (!test) {
     return NextResponse.json(
-      { error: { message: "Test tidak ditemukan", code: "NOT_FOUND" } },
+      { error: { message: "Test not found", code: "NOT_FOUND" } },
       { status: 404 },
     );
   }

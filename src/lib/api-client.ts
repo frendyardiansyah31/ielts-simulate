@@ -15,7 +15,7 @@ export async function apiRequest<T>(
   const body = response.status === 204 ? null : await response.json();
 
   if (!response.ok) {
-    throw new Error(body?.error?.message ?? "Terjadi kesalahan");
+    throw new Error(body?.error?.message ?? "Something went wrong");
   }
 
   return body?.data as T;

@@ -67,7 +67,7 @@ export function PassageForm(props: PassageFormProps) {
       router.refresh();
       props.onDone();
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : "Gagal menyimpan passage");
+      setFormError(err instanceof Error ? err.message : "Failed to save passage");
     }
   });
 
@@ -80,24 +80,24 @@ export function PassageForm(props: PassageFormProps) {
               id="passage-title"
               name="title"
               control={form.control}
-              label="Judul Passage"
+              label="Passage Title"
               placeholder="The History of Tea"
             />
             <FormTextareaField
               id="passage-content"
               name="content"
               control={form.control}
-              label="Isi Passage"
+              label="Passage Content"
               rows={12}
               placeholder="Full passage text..."
             />
             {formError && <p className="text-sm text-destructive">{formError}</p>}
             <div className="flex gap-2">
               <Button type="submit" disabled={form.formState.isSubmitting}>
-                Simpan
+                Save
               </Button>
               <Button type="button" variant="outline" onClick={props.onCancel}>
-                Batal
+                Cancel
               </Button>
             </div>
           </FieldGroup>

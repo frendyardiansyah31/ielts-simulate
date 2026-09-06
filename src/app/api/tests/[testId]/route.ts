@@ -21,7 +21,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 
   if (error || !test) {
     return NextResponse.json(
-      { error: { message: "Test tidak ditemukan", code: "NOT_FOUND" } },
+      { error: { message: "Test not found", code: "NOT_FOUND" } },
       { status: 404 },
     );
   }

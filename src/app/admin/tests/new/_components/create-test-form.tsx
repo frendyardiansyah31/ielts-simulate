@@ -38,7 +38,7 @@ export function CreateTestForm() {
       router.push(`/admin/tests/${data.id}`);
       router.refresh();
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : "Gagal membuat test");
+      setFormError(err instanceof Error ? err.message : "Failed to create test");
     }
   });
 
@@ -51,25 +51,25 @@ export function CreateTestForm() {
               id="test-title"
               name="title"
               control={form.control}
-              label="Judul Test"
+              label="Test Title"
               placeholder="Cambridge 18 Test 1"
             />
             <FormTextareaField
               id="test-description"
               name="description"
               control={form.control}
-              label="Deskripsi (opsional)"
+              label="Description (optional)"
             />
             <FormInputField
               id="test-time-limit"
               name="time_limit_minutes"
               control={form.control}
-              label="Time limit (menit)"
+              label="Time limit (minutes)"
               type="number"
             />
             {formError && <p className="text-sm text-destructive">{formError}</p>}
             <Button type="submit" disabled={form.formState.isSubmitting}>
-              Simpan
+              Save
             </Button>
           </FieldGroup>
         </form>

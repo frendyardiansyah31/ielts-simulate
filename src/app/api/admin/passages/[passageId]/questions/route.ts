@@ -39,7 +39,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json(
       {
         error: {
-          message: "Validasi gagal",
+          message: "Validation failed",
           code: "VALIDATION_ERROR",
           details: flattenError(validatedFields.error).fieldErrors,
         },
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json(
         {
           error: {
-            message: `Nomor soal ${question_number} sudah dipakai di test ini`,
+            message: `Question number ${question_number} is already used in this test`,
             code: "VALIDATION_ERROR",
           },
         },
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     if (error.code === "P0001") {
       return NextResponse.json(
-        { error: { message: "Passage tidak ditemukan", code: "NOT_FOUND" } },
+        { error: { message: "Passage not found", code: "NOT_FOUND" } },
         { status: 404 },
       );
     }

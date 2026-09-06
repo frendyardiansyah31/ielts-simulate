@@ -15,7 +15,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 
     if (!attempt) {
       return NextResponse.json(
-        { error: { message: "Attempt tidak ditemukan", code: "NOT_FOUND" } },
+        { error: { message: "Attempt not found", code: "NOT_FOUND" } },
         { status: 404 },
       );
     }

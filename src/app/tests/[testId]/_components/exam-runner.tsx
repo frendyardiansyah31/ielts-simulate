@@ -97,7 +97,7 @@ export function ExamRunner({ testId }: { testId: string }) {
         }
       } catch (err) {
         if (!cancelled) {
-          setLoadError(err instanceof Error ? err.message : "Gagal memuat test");
+          setLoadError(err instanceof Error ? err.message : "Failed to load test");
         }
       }
     }
@@ -127,7 +127,7 @@ export function ExamRunner({ testId }: { testId: string }) {
       await apiRequest(`/api/attempts/${attempt.id}/submit`, { method: "POST" });
       router.push(`/attempts/${attempt.id}`);
     } catch (err) {
-      setLoadError(err instanceof Error ? err.message : "Gagal submit test");
+      setLoadError(err instanceof Error ? err.message : "Failed to submit test");
       setIsSubmitting(false);
     }
   }
@@ -233,7 +233,7 @@ export function ExamRunner({ testId }: { testId: string }) {
     if (!test) return;
     const isLast = currentPassageIndex === test.passages.length - 1;
     if (isLast) {
-      if (window.confirm("Yakin ingin submit jawaban? Setelah submit, jawaban tidak bisa diubah lagi.")) {
+      if (window.confirm("Are you sure you want to submit? Once submitted, answers cannot be changed.")) {
         submitAttempt();
       }
       return;
@@ -258,7 +258,7 @@ export function ExamRunner({ testId }: { testId: string }) {
       >
         <p>{loadError}</p>
         <Link href="/tests" style={{ color: "#0B4F8A" }}>
-          Kembali ke daftar test
+          Back to test list
         </Link>
       </div>
     );
@@ -276,7 +276,7 @@ export function ExamRunner({ testId }: { testId: string }) {
           color: "#6B7684",
         }}
       >
-        Memuat test...
+        Loading test...
       </div>
     );
   }

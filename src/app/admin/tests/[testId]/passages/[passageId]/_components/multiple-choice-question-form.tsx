@@ -20,14 +20,14 @@ const questionFormSchema = z
     question_number: z.number().int().positive(),
     question_text: z.string().min(1, "Question text is required"),
     options: z
-      .array(z.object({ value: z.string().min(1, "Opsi tidak boleh kosong") }))
+      .array(z.object({ value: z.string().min(1, "Option cannot be empty") }))
       .min(3)
       .max(5),
     correct_index: z.number().int().min(0),
     explanation: z.string().optional(),
   })
   .refine((data) => data.correct_index < data.options.length, {
-    message: "Pilih salah satu jawaban benar",
+    message: "Select one correct answer",
     path: ["correct_index"],
   });
 
@@ -123,7 +123,7 @@ export function MultipleChoiceQuestionForm(props: MultipleChoiceQuestionFormProp
       router.refresh();
       props.onDone();
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : "Gagal menyimpan soal");
+      setFormError(err instanceof Error ? err.message : "Failed to save question");
     }
   });
 
@@ -136,7 +136,7 @@ export function MultipleChoiceQuestionForm(props: MultipleChoiceQuestionFormProp
               id="question-number"
               name="question_number"
               control={form.control}
-              label="Nomor Soal"
+              label="Question Number"
               type="number"
               disabled={props.mode === "edit"}
             />
@@ -144,12 +144,12 @@ export function MultipleChoiceQuestionForm(props: MultipleChoiceQuestionFormProp
               id="question-text"
               name="question_text"
               control={form.control}
-              label="Teks Pertanyaan"
+              label="Question Text"
               rows={3}
             />
 
             <Field>
-              <FieldLabel htmlFor="option-count">Jumlah Pilihan</FieldLabel>
+              <FieldLabel htmlFor="option-count">Number of Options</FieldLabel>
               <select
                 id="option-count"
                 className="h-8 w-24 rounded-lg border border-input bg-transparent px-2 text-sm"
@@ -165,7 +165,7 @@ export function MultipleChoiceQuestionForm(props: MultipleChoiceQuestionFormProp
             </Field>
 
             <Field>
-              <FieldLabel>Pilihan Jawaban (pilih radio untuk jawaban benar)</FieldLabel>
+              <FieldLabel>Answer Options (select the radio for the correct answer)</FieldLabel>
               <div className="flex flex-col gap-2">
                 {fields.map((field, index) => (
                   <div key={field.id} className="flex items-center gap-2">
@@ -173,7 +173,7 @@ export function MultipleChoiceQuestionForm(props: MultipleChoiceQuestionFormProp
                       type="radio"
                       checked={correctIndex === index}
                       onChange={() => form.setValue("correct_index", index)}
-                      aria-label={`Jawaban benar opsi ${index + 1}`}
+                      aria-label={`Correct answer option ${index + 1}`}
                     />
                     <Controller
                       name={`options.${index}.value`}
@@ -182,7 +182,7 @@ export function MultipleChoiceQuestionForm(props: MultipleChoiceQuestionFormProp
                         <div className="flex-1">
                           <Input
                             {...optionField}
-                            placeholder={`Opsi ${String.fromCharCode(65 + index)}`}
+                            placeholder={`Option ${String.fromCharCode(65 + index)}`}
                             aria-invalid={fieldState.invalid}
                           />
                           {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
@@ -201,7 +201,7 @@ export function MultipleChoiceQuestionForm(props: MultipleChoiceQuestionFormProp
               id="question-explanation"
               name="explanation"
               control={form.control}
-              label="Explanation (opsional)"
+              label="Explanation (optional)"
               rows={2}
             />
 
@@ -209,10 +209,10 @@ export function MultipleChoiceQuestionForm(props: MultipleChoiceQuestionFormProp
 
             <div className="flex gap-2">
               <Button type="submit" disabled={form.formState.isSubmitting}>
-                Simpan
+                Save
               </Button>
               <Button type="button" variant="outline" onClick={props.onCancel}>
-                Batal
+                Cancel
               </Button>
             </div>
           </FieldGroup>

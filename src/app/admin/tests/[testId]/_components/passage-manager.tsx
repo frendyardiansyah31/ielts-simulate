@@ -26,7 +26,7 @@ export function PassageManager({
   const passageByNumber = new Map(passages.map((p) => [p.passage_number, p]));
 
   async function deletePassage(passage: AdminPassageListItem) {
-    if (!window.confirm(`Hapus passage "${passage.title}"? Semua soal di dalamnya ikut terhapus.`)) {
+    if (!window.confirm(`Delete passage "${passage.title}"? All questions inside it will be deleted too.`)) {
       return;
     }
     setError(null);
@@ -34,7 +34,7 @@ export function PassageManager({
       await apiRequest(`/api/admin/passages/${passage.id}`, { method: "DELETE" });
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Gagal menghapus passage");
+      setError(err instanceof Error ? err.message : "Failed to delete passage");
     }
   }
 
@@ -74,9 +74,9 @@ export function PassageManager({
 
           return (
             <Card key={number} className="flex-row items-center justify-between px-4 text-sm text-muted-foreground">
-              <span>Passage {number} — belum diisi</span>
+              <span>Passage {number} — not filled in</span>
               <Button size="sm" onClick={() => setActiveSlot(number)}>
-                Tambah Passage {number}
+                Add Passage {number}
               </Button>
             </Card>
           );
@@ -89,7 +89,7 @@ export function PassageManager({
                 {passage.passage_number}. {passage.title}
               </p>
               <p className="text-sm text-muted-foreground">
-                {passage.word_count} kata · {passage.question_count} soal
+                {passage.word_count} words · {passage.question_count} questions
               </p>
             </div>
             <div className="flex shrink-0 gap-2">
@@ -97,13 +97,13 @@ export function PassageManager({
                 href={`/admin/tests/${testId}/passages/${passage.id}`}
                 className={buttonVariants({ variant: "outline", size: "sm" })}
               >
-                Kelola Soal
+                Manage Questions
               </Link>
               <Button variant="outline" size="sm" onClick={() => setEditingId(passage.id)}>
                 Edit
               </Button>
               <Button variant="destructive" size="sm" onClick={() => deletePassage(passage)}>
-                Hapus
+                Delete
               </Button>
             </div>
           </Card>

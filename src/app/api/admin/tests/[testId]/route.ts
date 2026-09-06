@@ -18,7 +18,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json(
       {
         error: {
-          message: "Validasi gagal",
+          message: "Validation failed",
           code: "VALIDATION_ERROR",
           details: flattenError(validatedFields.error).fieldErrors,
         },
@@ -53,7 +53,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
   if (!data) {
     return NextResponse.json(
-      { error: { message: "Test tidak ditemukan", code: "NOT_FOUND" } },
+      { error: { message: "Test not found", code: "NOT_FOUND" } },
       { status: 404 },
     );
   }

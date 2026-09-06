@@ -22,7 +22,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
   if (fetchError || !existing) {
     return NextResponse.json(
-      { error: { message: "Soal tidak ditemukan", code: "NOT_FOUND" } },
+      { error: { message: "Question not found", code: "NOT_FOUND" } },
       { status: 404 },
     );
   }
@@ -37,7 +37,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json(
       {
         error: {
-          message: `Tipe soal '${existing.type}' belum didukung untuk diedit`,
+          message: `Question type '${existing.type}' is not yet supported for editing`,
           code: "VALIDATION_ERROR",
         },
       },
@@ -52,9 +52,13 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json(
       {
         error: {
-          message: "Validasi gagal",
+          message: "Validation failed",
           code: "VALIDATION_ERROR",
-          details: flattenError(validatedFields.error).fieldErrors,
+          // Cast needed: updateSchema is a union across heterogeneous
+          // per-type schemas (question-validation.ts), so its ZodError type
+          // varies by branch — flattenError just needs the error's issues,
+          // which exist regardless of that widened type.
+          details: flattenError(validatedFields.error as never).fieldErrors,
         },
       },
       { status: 400 },

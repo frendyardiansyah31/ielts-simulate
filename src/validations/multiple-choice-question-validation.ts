@@ -11,7 +11,7 @@ export const multipleChoiceDataSchema = z
     correct_index: z.number().int().min(0),
   })
   .refine((data) => data.correct_index < data.options.length, {
-    message: "correct_index harus sesuai salah satu index di options",
+    message: "correct_index must match one of the option indexes",
     path: ["correct_index"],
   });
 

@@ -25,7 +25,7 @@ export default function Home() {
         </div>
 
         <p className="max-w-sm text-sm text-muted-foreground">
-          Latihan IELTS Reading dengan timing dan format asli
+          Practice IELTS Reading with real exam timing and format
         </p>
 
         <Link href="/tests" className={buttonVariants({ size: "lg" })}>

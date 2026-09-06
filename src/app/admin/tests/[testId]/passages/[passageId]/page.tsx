@@ -32,12 +32,12 @@ export default async function PassageDetailPage({ params }: PageProps) {
           href={`/admin/tests/${testId}`}
           className="w-fit text-sm text-muted-foreground underline-offset-4 hover:underline"
         >
-          ← Kembali ke Test
+          ← Back to Test
         </Link>
         <h1 className="text-xl font-semibold">
           Passage {passage.passage_number}: {passage.title}
         </h1>
-        <p className="text-sm text-muted-foreground">{passage.word_count} kata</p>
+        <p className="text-sm text-muted-foreground">{passage.word_count} words</p>
       </div>
 
       <QuestionManager passageId={passageId} questions={questions} />

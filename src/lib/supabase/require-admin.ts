@@ -41,7 +41,7 @@ export async function requireAdmin(): Promise<RequireAdminResult> {
     return {
       ok: false,
       response: NextResponse.json(
-        { error: { message: "Belum login", code: "UNAUTHENTICATED" } },
+        { error: { message: "Not logged in", code: "UNAUTHENTICATED" } },
         { status: 401 },
       ),
     };
@@ -51,7 +51,7 @@ export async function requireAdmin(): Promise<RequireAdminResult> {
     return {
       ok: false,
       response: NextResponse.json(
-        { error: { message: "Hanya admin yang boleh mengakses", code: "FORBIDDEN" } },
+        { error: { message: "Admin access only", code: "FORBIDDEN" } },
         { status: 403 },
       ),
     };

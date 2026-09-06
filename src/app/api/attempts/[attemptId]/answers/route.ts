@@ -21,7 +21,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json(
       {
         error: {
-          message: "Validasi gagal",
+          message: "Validation failed",
           code: "VALIDATION_ERROR",
           details: flattenError(validatedFields.error).fieldErrors,
         },
@@ -48,7 +48,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
   if (!attempt) {
     return NextResponse.json(
-      { error: { message: "Attempt tidak ditemukan", code: "NOT_FOUND" } },
+      { error: { message: "Attempt not found", code: "NOT_FOUND" } },
       { status: 404 },
     );
   }
@@ -57,7 +57,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json(
       {
         error: {
-          message: "Attempt sudah disubmit, tidak bisa mengubah jawaban",
+          message: "Attempt already submitted, answers can no longer be changed",
           code: "ATTEMPT_ALREADY_SUBMITTED",
         },
       },
@@ -81,7 +81,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
   if (!question) {
     return NextResponse.json(
-      { error: { message: "Soal tidak ditemukan di test ini", code: "NOT_FOUND" } },
+      { error: { message: "Question not found in this test", code: "NOT_FOUND" } },
       { status: 404 },
     );
   }
@@ -92,7 +92,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json(
       {
         error: {
-          message: `Tipe soal '${question.type}' belum didukung`,
+          message: `Question type '${question.type}' is not yet supported`,
           code: "VALIDATION_ERROR",
         },
       },
@@ -106,9 +106,12 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json(
       {
         error: {
-          message: "Validasi jawaban gagal",
+          message: "Answer validation failed",
           code: "VALIDATION_ERROR",
-          details: flattenError(validatedAnswer.error).fieldErrors,
+          // Cast needed: answerSchema is a union across heterogeneous
+          // per-type schemas (answer-validation.ts) — see same note in
+          // src/app/api/admin/questions/[questionId]/route.ts.
+          details: flattenError(validatedAnswer.error as never).fieldErrors,
         },
       },
       { status: 400 },

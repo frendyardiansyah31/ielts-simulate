@@ -53,7 +53,7 @@ export function TestEditor({ test }: { test: Test }) {
       });
       router.refresh();
     } catch (err) {
-      setFormError(err instanceof Error ? err.message : "Gagal menyimpan test");
+      setFormError(err instanceof Error ? err.message : "Failed to save test");
     }
   });
 
@@ -68,14 +68,14 @@ export function TestEditor({ test }: { test: Test }) {
       });
       router.refresh();
     } catch (err) {
-      setPublishError(err instanceof Error ? err.message : "Gagal mengubah status");
+      setPublishError(err instanceof Error ? err.message : "Failed to change status");
     } finally {
       setIsBusy(false);
     }
   }
 
   async function deleteTest() {
-    if (!window.confirm(`Hapus test "${test.title}"? Semua passage & soal ikut terhapus.`)) {
+    if (!window.confirm(`Delete test "${test.title}"? All passages & questions will be deleted too.`)) {
       return;
     }
     setIsBusy(true);
@@ -84,7 +84,7 @@ export function TestEditor({ test }: { test: Test }) {
       router.push("/admin");
       router.refresh();
     } catch (err) {
-      setPublishError(err instanceof Error ? err.message : "Gagal menghapus test");
+      setPublishError(err instanceof Error ? err.message : "Failed to delete test");
       setIsBusy(false);
     }
   }
@@ -93,7 +93,7 @@ export function TestEditor({ test }: { test: Test }) {
     <Card>
       <CardHeader className="flex-row items-center justify-between">
         <CardTitle className="flex items-center gap-2">
-          Detail Test
+          Test Details
           <Badge variant={test.status === "published" ? "success" : "neutral"}>
             {test.status === "published" ? "Published" : "Draft"}
           </Badge>
@@ -103,7 +103,7 @@ export function TestEditor({ test }: { test: Test }) {
             {test.status === "published" ? "Unpublish" : "Publish"}
           </Button>
           <Button variant="destructive" size="sm" disabled={isBusy} onClick={deleteTest}>
-            Hapus Test
+            Delete Test
           </Button>
         </div>
       </CardHeader>
@@ -111,23 +111,23 @@ export function TestEditor({ test }: { test: Test }) {
         {publishError && <p className="mb-3 text-sm text-destructive">{publishError}</p>}
         <form onSubmit={onSubmit}>
           <FieldGroup>
-            <FormInputField id="test-title" name="title" control={form.control} label="Judul Test" />
+            <FormInputField id="test-title" name="title" control={form.control} label="Test Title" />
             <FormTextareaField
               id="test-description"
               name="description"
               control={form.control}
-              label="Deskripsi (opsional)"
+              label="Description (optional)"
             />
             <FormInputField
               id="test-time-limit"
               name="time_limit_minutes"
               control={form.control}
-              label="Time limit (menit)"
+              label="Time limit (minutes)"
               type="number"
             />
             {formError && <p className="text-sm text-destructive">{formError}</p>}
             <Button type="submit" disabled={form.formState.isSubmitting} className="w-fit">
-              Simpan Perubahan
+              Save Changes
             </Button>
           </FieldGroup>
         </form>
